@@ -1,0 +1,195 @@
+import { useState, useRef } from 'react';
+import { useApp } from '../context/AppContext';
+import { extractText, validateFileSize, getFileType } from '../utils/textExtraction';
+
+interface NotesSectionProps {
+  subjectId: string;
+}
+
+export function NotesSection({ subjectId }: NotesSectionProps) {
+  const { getSubjectNotes, addNote, deleteNote } = useApp();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const notes = getSubjectNotes(subjectId);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      for (const file of Array.from(files)) {
+        // Validate file size (5MB max)
+        if (!validateFileSize(file, 5)) {
+          throw new Error(`File "${file.name}" exceeds 5MB limit`);
+        }
+
+        // Extract text from file
+        const result = await extractText(file);
+
+        if (!result.success) {
+          throw new Error(result.error || `Failed to process ${file.name}`);
+        }
+
+        // Add note to storage
+        addNote({
+          subjectId,
+          title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+          fileName: file.name,
+          fileType: getFileType(file),
+          content: result.text || '',
+          uploadDate: new Date().toISOString(),
+          fileSize: file.size,
+        });
+      }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const getFileIcon = (fileType: string): string => {
+    switch (fileType) {
+      case 'pdf': return '📄';
+      case 'docx': return '📝';
+      case 'image': return '🖼️';
+      case 'md': return '📋';
+      default: return '📄';
+    }
+  };
+
+  return (
+    <div>
+      {/* Upload Section */}
+      <div className="mb-8">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.docx,.txt,.md,image/*"
+          multiple
+          onChange={handleFileUpload}
+          className="hidden"
+          id="file-upload"
+        />
+
+        <label
+          htmlFor="file-upload"
+          className={`block w-full border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            uploading
+              ? 'border-gray-300 bg-gray-50 cursor-not-allowed'
+              : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+          }`}
+        >
+          {uploading ? (
+            <div>
+              <div className="text-4xl mb-2">⏳</div>
+              <p className="text-gray-600">Processing files...</p>
+            </div>
+          ) : (
+            <div>
+              <div className="text-4xl mb-2">📤</div>
+              <p className="text-gray-900 font-medium mb-1">Upload Notes & Documents</p>
+              <p className="text-sm text-gray-600 mb-2">
+                PDF, DOCX, TXT, MD, or Images (Max 5MB per file)
+              </p>
+              <p className="text-xs text-gray-500">
+                Click or drag files here
+              </p>
+            </div>
+          )}
+        </label>
+
+        {uploadError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800 text-sm">⚠️ {uploadError}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Notes Grid */}
+      {notes.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+          <p className="text-gray-600 text-lg mb-2">No notes uploaded yet</p>
+          <p className="text-gray-500 text-sm">Upload your first document to get started</p>
+        </div>
+      ) : (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Your Notes ({notes.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {notes.map((note) => (
+              <div
+                key={note.id}
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-2xl flex-shrink-0">{getFileIcon(note.fileType)}</span>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-semibold text-gray-900 truncate" title={note.title}>
+                        {note.title}
+                      </h4>
+                      <p className="text-xs text-gray-500">{note.fileName}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteNote(note.id)}
+                    className="text-red-600 hover:text-red-800 text-sm font-medium ml-2 flex-shrink-0"
+                  >
+                    Delete
+                  </button>
+                </div>
+
+                <div className="space-y-1 text-xs text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Size:</span>
+                    <span className="font-medium">{formatFileSize(note.fileSize)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Uploaded:</span>
+                    <span className="font-medium">{formatDate(note.uploadDate)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Content:</span>
+                    <span className="font-medium">{note.content.length} chars</span>
+                  </div>
+                </div>
+
+                {note.content && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-600 line-clamp-3">
+                      {note.content.substring(0, 150)}...
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

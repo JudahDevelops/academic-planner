@@ -7,9 +7,8 @@ interface HeaderProps {
 
 export function Header({ currentView, onViewChange }: HeaderProps) {
   const views: { id: ViewMode; label: string; icon: string }[] = [
-    { id: 'list', label: 'List', icon: '📋' },
-    { id: 'calendar', label: 'Calendar', icon: '📅' },
-    { id: 'timeline', label: 'Timeline', icon: '⏱️' },
+    { id: 'assignments', label: 'Assignments', icon: '📋' },
+    { id: 'study-hub', label: 'Study Hub', icon: '🎓' },
     { id: 'analytics', label: 'Analytics', icon: '📊' },
   ];
 
