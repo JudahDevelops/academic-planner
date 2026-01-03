@@ -185,7 +185,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...message,
       id: Date.now().toString(),
     };
-    setChatMessages([...chatMessages, newMessage]);
+    // Use functional update to ensure we get the latest state
+    setChatMessages(prev => [...prev, newMessage]);
   };
 
   const getSubjectChatHistory = (subjectId: string) => {
