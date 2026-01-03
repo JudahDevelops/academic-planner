@@ -1,18 +1,44 @@
-function App() {
+import { useState } from 'react';
+import { AppProvider } from './context/AppContext';
+import { Header } from './components/Header';
+import { ListView } from './components/ListView';
+import { CalendarView } from './components/CalendarView';
+import { TimelineView } from './components/TimelineView';
+import { AnalyticsView } from './components/AnalyticsView';
+import { ViewMode } from './types';
+
+function AppContent() {
+  const [currentView, setCurrentView] = useState<ViewMode>('list');
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'list':
+        return <ListView />;
+      case 'calendar':
+        return <CalendarView />;
+      case 'timeline':
+        return <TimelineView />;
+      case 'analytics':
+        return <AnalyticsView />;
+      default:
+        return <ListView />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Academic Planner</h1>
-        <p className="text-gray-600 mb-8">Smart Assignment Tracking & Academic Calendar</p>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-700">
-            Setting up your academic planner...
-          </p>
-        </div>
-      </div>
+      <Header currentView={currentView} onViewChange={setCurrentView} />
+      <main>{renderView()}</main>
     </div>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
+  );
+}
+
+export default App;
