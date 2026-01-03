@@ -11,13 +11,27 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const notes = getSubjectNotes(subjectId);
   const chatHistory = getSubjectChatHistory(subjectId);
 
+  // Auto-select all notes by default when notes change
+  useEffect(() => {
+    if (notes.length > 0 && selectedNoteIds.length === 0) {
+      setSelectedNoteIds(notes.map(n => n.id));
+    }
+  }, [notes.length]);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+
+  // Debug: Log chat history changes
+  useEffect(() => {
+    console.log('Chat history updated. Total messages:', chatHistory.length);
+    console.log('Messages:', chatHistory.map(m => ({ role: m.role, preview: m.content.substring(0, 50) })));
   }, [chatHistory]);
 
   const handleSendMessage = async () => {
@@ -34,33 +48,48 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
     setIsLoading(true);
 
     // Add user message to context immediately
-    addChatMessage({
+    const userMsg = {
       subjectId,
-      role: 'user',
+      role: 'user' as const,
       content: userMessage,
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    console.log('Adding user message:', userMsg);
+    addChatMessage(userMsg);
 
     try {
-      const noteContents = notes.map(n => n.content);
+      // Use only selected notes
+      const selectedNotes = notes.filter(n => selectedNoteIds.includes(n.id));
+      const noteContents = selectedNotes.map(n => n.content);
+
+      if (noteContents.length === 0) {
+        setError('Please select at least one note to chat about');
+        setIsLoading(false);
+        return;
+      }
 
       // Build history including all previous messages
-      // Note: We don't include the just-added user message here because
-      // it will be passed separately as userMessage parameter
       const history = chatHistory.map(msg => ({
         role: msg.role,
         content: msg.content,
       }));
 
+      console.log('Current chat history length:', chatHistory.length);
+      console.log('Sending to AI with history:', history);
+
       const response = await chatWithNotes(noteContents, history, userMessage);
 
       // Add assistant response
-      addChatMessage({
+      const assistantMsg = {
         subjectId,
-        role: 'assistant',
+        role: 'assistant' as const,
         content: response,
         timestamp: new Date().toISOString(),
-      });
+      };
+
+      console.log('Adding assistant message:', assistantMsg);
+      addChatMessage(assistantMsg);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get response');
       // Even on error, the user message stays in history
@@ -90,15 +119,23 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
     'Explain this topic simply',
   ];
 
+  const toggleNoteSelection = (noteId: string) => {
+    setSelectedNoteIds(prev =>
+      prev.includes(noteId)
+        ? prev.filter(id => id !== noteId)
+        : [...prev, noteId]
+    );
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
       {/* Header */}
       <div className="bg-white rounded-t-lg border border-b-0 border-gray-200 p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="font-semibold text-gray-900">AI Study Assistant</h3>
             <p className="text-sm text-gray-600">
-              {notes.length} {notes.length === 1 ? 'note' : 'notes'} loaded
+              {selectedNoteIds.length} of {notes.length} {notes.length === 1 ? 'note' : 'notes'} selected • {chatHistory.length} messages in history
             </p>
           </div>
           {chatHistory.length > 0 && (
@@ -110,6 +147,35 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
             </button>
           )}
         </div>
+
+        {/* Note Selection */}
+        {notes.length > 0 && (
+          <div className="border-t border-gray-200 pt-3">
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              Select Notes for AI Context
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {notes.map((note) => (
+                <label
+                  key={note.id}
+                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm cursor-pointer transition-colors ${
+                    selectedNoteIds.includes(note.id)
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedNoteIds.includes(note.id)}
+                    onChange={() => toggleNoteSelection(note.id)}
+                    className="sr-only"
+                  />
+                  <span>{note.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Chat Messages */}
