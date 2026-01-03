@@ -7,8 +7,8 @@ interface AssignmentCardProps {
 }
 
 export function AssignmentCard({ assignment, onEdit }: AssignmentCardProps) {
-  const { courses, updateAssignment, deleteAssignment } = useApp();
-  const course = courses.find(c => c.id === assignment.courseId);
+  const { subjects, updateAssignment, deleteAssignment } = useApp();
+  const course = subjects.find(c => c.id === assignment.subjectId);
 
   const priorityColors = {
     low: 'bg-green-100 text-green-800',

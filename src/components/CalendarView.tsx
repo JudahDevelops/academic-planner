@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Assignment } from '../types';
 
 export function CalendarView() {
-  const { assignments, courses } = useApp();
+  const { assignments, subjects } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -53,7 +53,7 @@ export function CalendarView() {
         </div>
         <div className="space-y-1 overflow-y-auto max-h-20">
           {dayAssignments.map(assignment => {
-            const course = courses.find(c => c.id === assignment.courseId);
+            const course = subjects.find(c => c.id === assignment.subjectId);
             return (
               <div
                 key={assignment.id}

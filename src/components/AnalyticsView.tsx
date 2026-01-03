@@ -1,7 +1,7 @@
 import { useApp } from '../context/AppContext';
 
 export function AnalyticsView() {
-  const { assignments, courses } = useApp();
+  const { assignments, subjects } = useApp();
 
   const totalAssignments = assignments.length;
   const completedAssignments = assignments.filter(a => a.status === 'completed').length;
@@ -23,11 +23,11 @@ export function AnalyticsView() {
     return a.status !== 'completed' && dueDate >= now && dueDate <= weekFromNow;
   }).length;
 
-  const assignmentsByCourse = courses.map(course => ({
+  const assignmentsByCourse = subjects.map(course => ({
     course,
-    total: assignments.filter(a => a.courseId === course.id).length,
-    completed: assignments.filter(a => a.courseId === course.id && a.status === 'completed').length,
-    active: assignments.filter(a => a.courseId === course.id && a.status !== 'completed').length,
+    total: assignments.filter(a => a.subjectId === course.id).length,
+    completed: assignments.filter(a => a.subjectId === course.id && a.status === 'completed').length,
+    active: assignments.filter(a => a.subjectId === course.id && a.status !== 'completed').length,
   })).filter(c => c.total > 0);
 
   const assignmentsByPriority = {

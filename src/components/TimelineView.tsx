@@ -1,7 +1,7 @@
 import { useApp } from '../context/AppContext';
 
 export function TimelineView() {
-  const { assignments, courses } = useApp();
+  const { assignments, subjects } = useApp();
 
   const sortedAssignments = [...assignments]
     .filter(a => a.status !== 'completed')
@@ -64,7 +64,7 @@ export function TimelineView() {
       </h3>
       <div className="space-y-3">
         {assignments.map(assignment => {
-          const course = courses.find(c => c.id === assignment.courseId);
+          const course = subjects.find(c => c.id === assignment.subjectId);
           return (
             <div
               key={assignment.id}

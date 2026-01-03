@@ -8,10 +8,10 @@ interface AssignmentFormProps {
 }
 
 export function AssignmentForm({ onClose, editingAssignment }: AssignmentFormProps) {
-  const { courses, addAssignment, updateAssignment } = useApp();
+  const { subjects, addAssignment, updateAssignment } = useApp();
   const [formData, setFormData] = useState({
     title: editingAssignment?.title || '',
-    courseId: editingAssignment?.courseId || courses[0]?.id || '',
+    subjectId: editingAssignment?.subjectId || subjects[0]?.id || '',
     dueDate: editingAssignment?.dueDate || '',
     priority: editingAssignment?.priority || 'medium' as const,
     status: editingAssignment?.status || 'not-started' as const,
@@ -56,17 +56,17 @@ export function AssignmentForm({ onClose, editingAssignment }: AssignmentFormPro
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Course *
+                  Subject *
                 </label>
                 <select
                   required
-                  value={formData.courseId}
-                  onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
+                  value={formData.subjectId}
+                  onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {courses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.name}
+                  {subjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.name}
                     </option>
                   ))}
                 </select>

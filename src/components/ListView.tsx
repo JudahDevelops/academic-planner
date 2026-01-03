@@ -35,7 +35,7 @@ export function ListView() {
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     }
-    return a.courseId.localeCompare(b.courseId);
+    return a.subjectId.localeCompare(b.subjectId);
   });
 
   const activeCount = assignments.filter(a => a.status !== 'completed').length;
