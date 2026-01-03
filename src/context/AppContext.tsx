@@ -43,11 +43,7 @@ const STORAGE_KEYS = {
   CHAT: 'academic-hub-chat',
 };
 
-const DEFAULT_SUBJECTS: Subject[] = [
-  { id: '1', name: 'Software Engineering', color: '#3b82f6' },
-  { id: '2', name: 'Data Structures', color: '#10b981' },
-  { id: '3', name: 'Web Development', color: '#f59e0b' },
-];
+const DEFAULT_SUBJECTS: Subject[] = [];
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // Subjects

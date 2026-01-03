@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { NotesSection } from './NotesSection';
 import { QuizzesSection } from './QuizzesSection';
 import { ChatSection } from './ChatSection';
+import { SubjectManager } from './SubjectManager';
 
 type StudyHubTab = 'notes' | 'quizzes' | 'chat';
 
@@ -10,6 +11,7 @@ export function StudyHubView() {
   const { subjects } = useApp();
   const [currentTab, setCurrentTab] = useState<StudyHubTab>('notes');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(subjects[0]?.id || '');
+  const [showSubjectManager, setShowSubjectManager] = useState(false);
 
   const tabs: { id: StudyHubTab; label: string; icon: string }[] = [
     { id: 'notes', label: 'Notes & Documents', icon: '📁' },
@@ -48,20 +50,34 @@ export function StudyHubView() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Subject Selector */}
           <div className="py-4 border-b border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Subject
-            </label>
-            <select
-              value={selectedSubjectId}
-              onChange={(e) => setSelectedSubjectId(e.target.value)}
-              className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              {subjects.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-end justify-between gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject
+                </label>
+                <select
+                  value={selectedSubjectId}
+                  onChange={(e) => setSelectedSubjectId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  {subjects.length === 0 ? (
+                    <option value="">No subjects - Create one!</option>
+                  ) : (
+                    subjects.map((subject) => (
+                      <option key={subject.id} value={subject.id}>
+                        {subject.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+              <button
+                onClick={() => setShowSubjectManager(true)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm whitespace-nowrap"
+              >
+                ⚙️ Manage Subjects
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -105,6 +121,11 @@ export function StudyHubView() {
 
         {renderContent()}
       </div>
+
+      {/* Subject Manager Modal */}
+      {showSubjectManager && (
+        <SubjectManager onClose={() => setShowSubjectManager(false)} />
+      )}
     </div>
   );
 }
