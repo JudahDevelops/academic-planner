@@ -33,7 +33,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
     setError(null);
     setIsLoading(true);
 
-    // Add user message
+    // Add user message to context immediately
     addChatMessage({
       subjectId,
       role: 'user',
@@ -43,6 +43,10 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
 
     try {
       const noteContents = notes.map(n => n.content);
+
+      // Build history including all previous messages
+      // Note: We don't include the just-added user message here because
+      // it will be passed separately as userMessage parameter
       const history = chatHistory.map(msg => ({
         role: msg.role,
         content: msg.content,
@@ -59,6 +63,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get response');
+      // Even on error, the user message stays in history
     } finally {
       setIsLoading(false);
     }
@@ -130,9 +135,9 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
             </div>
           </div>
         ) : (
-          chatHistory.map((message, index) => (
+          chatHistory.map((message) => (
             <div
-              key={index}
+              key={message.id}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
