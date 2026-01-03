@@ -20,27 +20,42 @@ interface DeepSeekResponse {
  * Make a request to DeepSeek API
  */
 async function callDeepSeek(messages: DeepSeekMessage[]): Promise<string> {
-  const response = await fetch(DEEPSEEK_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      messages,
-      temperature: 0.7,
-      max_tokens: 4000,
-    }),
-  });
+  try {
+    console.log('Calling DeepSeek API with messages:', messages.length);
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`DeepSeek API error: ${response.status} - ${error}`);
+    const response = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages,
+        temperature: 0.7,
+        max_tokens: 4000,
+      }),
+    });
+
+    console.log('DeepSeek response status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('DeepSeek API error response:', error);
+      throw new Error(`DeepSeek API error: ${response.status} - ${error}`);
+    }
+
+    const data: DeepSeekResponse = await response.json();
+    console.log('DeepSeek response received, content length:', data.choices[0].message.content.length);
+
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('DeepSeek API call failed:', error);
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to reach DeepSeek API. Check your internet connection and API key.');
+    }
+    throw error;
   }
-
-  const data: DeepSeekResponse = await response.json();
-  return data.choices[0].message.content;
 }
 
 /**
