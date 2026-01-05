@@ -52,9 +52,12 @@ export interface Quiz {
   createdAt: string;
   settings: {
     questionCount: number; // 10-50
+    timeLimit?: number; // in minutes (optional timer)
+    showInstantFeedback?: boolean; // show if answer is correct immediately
   };
   completedAt?: string;
   score?: number; // percentage (0-100)
+  timeTaken?: number; // time taken in seconds
 }
 
 // Chat message for NotebookLM-style interface

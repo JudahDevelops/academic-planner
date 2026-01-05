@@ -17,45 +17,66 @@ interface DeepSeekResponse {
 }
 
 /**
- * Make a request to DeepSeek API
+ * Make a request to DeepSeek API with retry logic
  */
-async function callDeepSeek(messages: DeepSeekMessage[]): Promise<string> {
-  try {
-    console.log('Calling DeepSeek API with messages:', messages.length);
+async function callDeepSeek(messages: DeepSeekMessage[], retries = 3): Promise<string> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`DeepSeek API attempt ${attempt}/${retries}, messages:`, messages.length);
 
-    const response = await fetch(DEEPSEEK_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages,
-        temperature: 0.7,
-        max_tokens: 4000,
-      }),
-    });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-    console.log('DeepSeek response status:', response.status, response.statusText);
+      const response = await fetch(DEEPSEEK_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages,
+          temperature: 0.7,
+          max_tokens: 4000,
+        }),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('DeepSeek API error response:', error);
-      throw new Error(`DeepSeek API error: ${response.status} - ${error}`);
+      clearTimeout(timeoutId);
+      console.log('DeepSeek response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('DeepSeek API error response:', error);
+        throw new Error(`DeepSeek API error: ${response.status} - ${error}`);
+      }
+
+      const data: DeepSeekResponse = await response.json();
+      console.log('DeepSeek response received, content length:', data.choices[0].message.content.length);
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error(`DeepSeek API call failed (attempt ${attempt}/${retries}):`, error);
+
+      // Don't retry on the last attempt
+      if (attempt === retries) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error('Request timeout: The API took too long to respond. Try with fewer questions or shorter notes.');
+        }
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          throw new Error('Network error: Unable to reach DeepSeek API. Check your internet connection.');
+        }
+        throw error;
+      }
+
+      // Wait before retrying (exponential backoff)
+      const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      console.log(`Waiting ${waitTime}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
-
-    const data: DeepSeekResponse = await response.json();
-    console.log('DeepSeek response received, content length:', data.choices[0].message.content.length);
-
-    return data.choices[0].message.content;
-  } catch (error) {
-    console.error('DeepSeek API call failed:', error);
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Unable to reach DeepSeek API. Check your internet connection and API key.');
-    }
-    throw error;
   }
+
+  throw new Error('Failed to complete API request after all retries');
 }
 
 /**
