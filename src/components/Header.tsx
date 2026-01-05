@@ -9,6 +9,7 @@ export function Header({ currentView, onViewChange }: HeaderProps) {
   const views: { id: ViewMode; label: string; icon: string }[] = [
     { id: 'assignments', label: 'Assignments', icon: '📋' },
     { id: 'study-hub', label: 'Study Hub', icon: '🎓' },
+    { id: 'timetable', label: 'Timetable', icon: '📅' },
     { id: 'analytics', label: 'Analytics', icon: '📊' },
   ];
 

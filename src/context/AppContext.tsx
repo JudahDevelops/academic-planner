@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Assignment, Subject, Note, Quiz, ChatMessage } from '../types';
+import { Assignment, Subject, Note, Quiz, ChatMessage, TimetableEntry } from '../types';
 
 interface AppContextType {
   // Subjects
@@ -31,6 +31,13 @@ interface AppContextType {
   addChatMessage: (message: Omit<ChatMessage, 'id'>) => void;
   getSubjectChatHistory: (subjectId: string) => ChatMessage[];
   clearSubjectChat: (subjectId: string) => void;
+
+  // Timetable
+  timetableEntries: TimetableEntry[];
+  addTimetableEntry: (entry: Omit<TimetableEntry, 'id'>) => void;
+  updateTimetableEntry: (id: string, entry: Partial<TimetableEntry>) => void;
+  deleteTimetableEntry: (id: string) => void;
+  getTimetableByDay: (dayOfWeek: number) => TimetableEntry[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -41,6 +48,7 @@ const STORAGE_KEYS = {
   NOTES: 'academic-hub-notes',
   QUIZZES: 'academic-hub-quizzes',
   CHAT: 'academic-hub-chat',
+  TIMETABLE: 'academic-hub-timetable',
 };
 
 const DEFAULT_SUBJECTS: Subject[] = [];
@@ -76,6 +84,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return stored ? JSON.parse(stored) : [];
   });
 
+  // Timetable entries
+  const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.TIMETABLE);
+    return stored ? JSON.parse(stored) : [];
+  });
+
   // Persist to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
@@ -97,6 +111,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEYS.CHAT, JSON.stringify(chatMessages));
   }, [chatMessages]);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(timetableEntries));
+  }, [timetableEntries]);
+
   // Subject functions
   const addSubject = (subject: Omit<Subject, 'id'>) => {
     const newSubject: Subject = {
@@ -113,6 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setNotes(notes.filter(n => n.subjectId !== id));
     setQuizzes(quizzes.filter(q => q.subjectId !== id));
     setChatMessages(chatMessages.filter(m => m.subjectId !== id));
+    setTimetableEntries(timetableEntries.filter(e => e.subjectId !== id));
   };
 
   // Assignment functions
@@ -197,6 +216,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setChatMessages(chatMessages.filter(m => m.subjectId !== subjectId));
   };
 
+  // Timetable functions
+  const addTimetableEntry = (entry: Omit<TimetableEntry, 'id'>) => {
+    const newEntry: TimetableEntry = {
+      ...entry,
+      id: Date.now().toString(),
+    };
+    setTimetableEntries([...timetableEntries, newEntry]);
+  };
+
+  const updateTimetableEntry = (id: string, updatedFields: Partial<TimetableEntry>) => {
+    setTimetableEntries(timetableEntries.map(e =>
+      e.id === id ? { ...e, ...updatedFields } : e
+    ));
+  };
+
+  const deleteTimetableEntry = (id: string) => {
+    setTimetableEntries(timetableEntries.filter(e => e.id !== id));
+  };
+
+  const getTimetableByDay = (dayOfWeek: number) => {
+    return timetableEntries
+      .filter(e => e.dayOfWeek === dayOfWeek)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  };
+
   return (
     <AppContext.Provider value={{
       subjects,
@@ -219,6 +263,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addChatMessage,
       getSubjectChatHistory,
       clearSubjectChat,
+      timetableEntries,
+      addTimetableEntry,
+      updateTimetableEntry,
+      deleteTimetableEntry,
+      getTimetableByDay,
     }}>
       {children}
     </AppContext.Provider>

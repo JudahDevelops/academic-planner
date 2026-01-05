@@ -3,6 +3,7 @@ import { AppProvider } from './context/AppContext';
 import { Header } from './components/Header';
 import { AssignmentsView } from './components/AssignmentsView';
 import { StudyHubView } from './components/StudyHubView';
+import { TimetableView } from './components/TimetableView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { ViewMode } from './types';
 
@@ -15,6 +16,8 @@ function AppContent() {
         return <AssignmentsView />;
       case 'study-hub':
         return <StudyHubView />;
+      case 'timetable':
+        return <TimetableView />;
       case 'analytics':
         return <AnalyticsView />;
       default:

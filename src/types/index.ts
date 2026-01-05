@@ -69,4 +69,15 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-export type ViewMode = 'assignments' | 'study-hub' | 'analytics';
+// Timetable entry for class schedule
+export interface TimetableEntry {
+  id: string;
+  subjectId: string;
+  dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime: string; // HH:MM format (24-hour)
+  endTime: string; // HH:MM format (24-hour)
+  location?: string; // classroom, building, room number
+  notes?: string; // additional notes (e.g., "Lab session", "Lecture")
+}
+
+export type ViewMode = 'assignments' | 'study-hub' | 'timetable' | 'analytics';
