@@ -118,20 +118,63 @@ Example format:
       { role: 'user', content: userPrompt },
     ]);
 
-    // Parse the response
-    const parsed = JSON.parse(response);
-    const questions: Question[] = parsed.questions.map((q: any, index: number) => ({
-      id: `q-${Date.now()}-${index}`,
-      question: q.question,
-      options: q.options as [string, string, string, string],
-      correctAnswer: q.correctAnswer as 0 | 1 | 2 | 3,
-      explanation: q.explanation,
-    }));
+    console.log('Raw DeepSeek response:', response.substring(0, 200) + '...');
 
+    // Extract JSON from response (handle markdown code blocks and extra text)
+    let jsonString = response.trim();
+
+    // Remove markdown code blocks if present
+    if (jsonString.includes('```')) {
+      const match = jsonString.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (match) {
+        jsonString = match[1];
+      } else {
+        // Try to find JSON between any code blocks
+        jsonString = jsonString.replace(/```(?:json)?/g, '').replace(/```/g, '');
+      }
+    }
+
+    // Find JSON object in the string (in case there's extra text)
+    const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonString = jsonMatch[0];
+    }
+
+    console.log('Extracted JSON:', jsonString.substring(0, 200) + '...');
+
+    // Parse the response
+    const parsed = JSON.parse(jsonString);
+
+    if (!parsed.questions || !Array.isArray(parsed.questions)) {
+      throw new Error('Invalid response format: missing questions array');
+    }
+
+    if (parsed.questions.length === 0) {
+      throw new Error('No questions were generated');
+    }
+
+    const questions: Question[] = parsed.questions.map((q: any, index: number) => {
+      if (!q.question || !q.options || !Array.isArray(q.options)) {
+        throw new Error(`Invalid question format at index ${index}`);
+      }
+
+      return {
+        id: `q-${Date.now()}-${index}`,
+        question: q.question,
+        options: q.options as [string, string, string, string],
+        correctAnswer: q.correctAnswer as 0 | 1 | 2 | 3,
+        explanation: q.explanation,
+      };
+    });
+
+    console.log(`Successfully generated ${questions.length} questions`);
     return questions;
   } catch (error) {
     console.error('Quiz generation error:', error);
-    throw new Error('Failed to generate quiz. Please try again.');
+    if (error instanceof SyntaxError) {
+      throw new Error('Failed to parse AI response. The AI returned invalid JSON. Please try again.');
+    }
+    throw new Error(error instanceof Error ? error.message : 'Failed to generate quiz. Please try again.');
   }
 }
 
