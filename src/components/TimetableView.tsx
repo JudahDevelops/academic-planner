@@ -266,7 +266,7 @@ function TimetableEntryModal({
   entry: TimetableEntry | null;
   onClose: () => void;
 }) {
-  const { subjects, addTimetableEntry, updateTimetableEntry } = useApp();
+  const { subjects, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry } = useApp();
   const [formData, setFormData] = useState({
     subjectId: entry?.subjectId || subjects[0]?.id || '',
     dayOfWeek: entry?.dayOfWeek ?? 1,
@@ -315,6 +315,13 @@ function TimetableEntryModal({
     }
 
     onClose();
+  };
+
+  const handleDelete = () => {
+    if (entry && confirm('Delete this class from your timetable?')) {
+      deleteTimetableEntry(entry.id);
+      onClose();
+    }
   };
 
   return (
@@ -430,19 +437,46 @@ function TimetableEntryModal({
 
             {/* Buttons */}
             <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-              >
-                {entry ? 'Update' : 'Add'} Class
-              </button>
+              {entry ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="px-6 py-3 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 font-medium"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    Update
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    Add Class
+                  </button>
+                </>
+              )}
             </div>
           </form>
         </div>
