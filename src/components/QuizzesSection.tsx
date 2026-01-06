@@ -221,7 +221,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                 </>
               ) : (
                 <>
-                  <SparklesIcon size={20} />
+                  <SparklesIcon size={18} />
                   <span>Generate {questionCount}-Question Quiz</span>
                 </>
               )}

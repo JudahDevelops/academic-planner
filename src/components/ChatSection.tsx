@@ -279,7 +279,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
         </div>
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
-          <IdeaIcon size={14} />
+          <IdeaIcon size={12} />
           Tip: Ask for summaries, explanations, study guides, or practice questions
         </p>
       </div>

@@ -72,7 +72,7 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
   };
 
   const getFileIcon = (fileType: string) => {
-    const iconProps = { size: 28 };
+    const iconProps = { size: 22 };
     switch (fileType) {
       case 'pdf': return <FolderIcon {...iconProps} />;
       case 'docx': return <AssignmentsIcon {...iconProps} />;

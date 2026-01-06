@@ -11,11 +11,27 @@ interface HeaderProps {
 }
 
 export function Header({ currentView, onViewChange }: HeaderProps) {
-  const views: { id: ViewMode; label: string; icon: React.ReactNode; description: string }[] = [
-    { id: 'study-hub', label: 'Study Hub', icon: <StudyIcon size={20} />, description: 'AI-powered learning tools' },
-    { id: 'timetable', label: 'Timetable', icon: <CalendarIcon size={20} />, description: 'Weekly class schedule' },
-    { id: 'assignments', label: 'Assignments', icon: <AssignmentsIcon size={20} />, description: 'Track deadlines and progress' },
-    { id: 'analytics', label: 'Overview', icon: <AnalyticsIcon size={20} />, description: 'Performance insights' },
+  const getViewIcon = (viewId: ViewMode, isActive: boolean) => {
+    const size = 18;
+    const variant = isActive ? 'white' : 'gradient';
+
+    switch (viewId) {
+      case 'study-hub':
+        return <StudyIcon size={size} variant={variant} />;
+      case 'timetable':
+        return <CalendarIcon size={size} variant={variant} />;
+      case 'assignments':
+        return <AssignmentsIcon size={size} variant={variant} />;
+      case 'analytics':
+        return <AnalyticsIcon size={size} variant={variant} />;
+    }
+  };
+
+  const views: { id: ViewMode; label: string; description: string }[] = [
+    { id: 'study-hub', label: 'Study Hub', description: 'AI-powered learning tools' },
+    { id: 'timetable', label: 'Timetable', description: 'Weekly class schedule' },
+    { id: 'assignments', label: 'Assignments', description: 'Track deadlines and progress' },
+    { id: 'analytics', label: 'Overview', description: 'Performance insights' },
   ];
 
   return (
@@ -36,7 +52,7 @@ export function Header({ currentView, onViewChange }: HeaderProps) {
                   <motion.button
                     key={view.id}
                     onClick={() => onViewChange(view.id)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                       currentView === view.id
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -45,7 +61,7 @@ export function Header({ currentView, onViewChange }: HeaderProps) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span className="mr-2">{view.icon}</span>
+                    {getViewIcon(view.id, currentView === view.id)}
                     {view.label}
                   </motion.button>
                 ))}
@@ -77,20 +93,19 @@ export function Header({ currentView, onViewChange }: HeaderProps) {
             <motion.button
               key={view.id}
               onClick={() => onViewChange(view.id)}
-              className={`flex flex-col items-center justify-center gap-1 transition-colors ${
+              className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
                 currentView === view.id
                   ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
               whileTap={{ scale: 0.9 }}
             >
-              <motion.span
-                className="text-xl"
-                animate={currentView === view.id ? { scale: [1, 1.2, 1] } : {}}
+              <motion.div
+                animate={currentView === view.id ? { scale: [1, 1.15, 1] } : {}}
                 transition={{ duration: 0.3 }}
               >
-                {view.icon}
-              </motion.span>
+                {getViewIcon(view.id, false)}
+              </motion.div>
               <span className="text-xs font-medium truncate w-full text-center px-1">
                 {view.label}
               </span>

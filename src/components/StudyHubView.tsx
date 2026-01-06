@@ -78,7 +78,7 @@ export function StudyHubView() {
             ) : (
               <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                 <div className="flex justify-center mb-4">
-                  <AssignmentsIcon size={64} />
+                  <AssignmentsIcon size={48} />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Notes Uploaded Yet</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">Upload notes first to generate AI quizzes</p>
@@ -97,7 +97,7 @@ export function StudyHubView() {
             ) : (
               <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                 <div className="flex justify-center mb-4">
-                  <AssignmentsIcon size={64} />
+                  <AssignmentsIcon size={48} />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Notes Uploaded Yet</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">Upload notes first to chat with the AI study assistant</p>
@@ -124,7 +124,7 @@ export function StudyHubView() {
           <div className="text-center py-16">
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12 border-2 border-dashed border-blue-300 dark:border-blue-700 max-w-2xl mx-auto">
               <div className="flex justify-center mb-6 animate-bounce">
-                <StudyIcon size={72} />
+                <StudyIcon size={56} />
               </div>
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Create Your First Subject</h2>
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">Subjects are the foundation of StudyFlow!</p>
@@ -187,7 +187,7 @@ export function StudyHubView() {
                     >
                       <div className="flex items-start gap-3">
                         <div className="group-hover:scale-110 transition-transform">
-                          <FolderIcon size={28} />
+                          <FolderIcon size={22} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">
@@ -215,7 +215,7 @@ export function StudyHubView() {
                     >
                       <div className="flex items-start gap-3">
                         <div className={`${hasNotes && 'group-hover:scale-110'} transition-transform`}>
-                          <TargetIcon size={28} />
+                          <TargetIcon size={22} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
@@ -252,7 +252,7 @@ export function StudyHubView() {
                     >
                       <div className="flex items-start gap-3">
                         <div className={`${hasNotes && 'group-hover:scale-110'} transition-transform`}>
-                          <ChatIcon size={28} />
+                          <ChatIcon size={22} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">

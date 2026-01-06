@@ -129,7 +129,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                       transition={{ delay: 0.5 + index * 0.1 }}
                     >
                       <div className="flex-shrink-0">
-                        <feature.Icon size={32} />
+                        <feature.Icon size={24} />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">{feature.title}</h3>
@@ -397,7 +397,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <div className="p-4 border-2 border-blue-100 rounded-lg">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <AssignmentsIcon size={32} />
+                      <AssignmentsIcon size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Assignments View</h3>
@@ -411,7 +411,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <div className="p-4 border-2 border-purple-100 rounded-lg">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <StudyIcon size={32} />
+                      <StudyIcon size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Study Hub</h3>
@@ -425,7 +425,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <div className="p-4 border-2 border-green-100 rounded-lg">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <CalendarIcon size={32} />
+                      <CalendarIcon size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Timetable</h3>
@@ -439,7 +439,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <div className="p-4 border-2 border-orange-100 rounded-lg">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <AnalyticsIcon size={32} />
+                      <AnalyticsIcon size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Analytics</h3>

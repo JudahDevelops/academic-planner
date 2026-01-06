@@ -124,7 +124,7 @@ export function AnalyticsView() {
             : 'bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700'
         }`}>
           <div className="flex items-center gap-2 mb-3">
-            <CalendarIcon size={28} />
+            <CalendarIcon size={22} />
             <h3 className={`font-semibold ${
               upcomingWeekAssignments > 0 ? 'text-orange-900 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
             }`}>

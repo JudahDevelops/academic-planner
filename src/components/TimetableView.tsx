@@ -87,7 +87,7 @@ export function TimetableView() {
         <div className="text-center py-16">
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12 border-2 border-dashed border-blue-300 dark:border-blue-700 max-w-2xl mx-auto">
             <div className="flex justify-center mb-6 animate-bounce">
-              <CalendarIcon size={96} />
+              <CalendarIcon size={64} />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Create a Subject First!</h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">You need subjects before creating your timetable</p>
@@ -102,7 +102,7 @@ export function TimetableView() {
               }}
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 font-semibold text-lg shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all transform hover:scale-105"
             >
-              <StudyIcon size={24} />
+              <StudyIcon size={20} />
               Go to Study Hub
             </a>
           </div>
