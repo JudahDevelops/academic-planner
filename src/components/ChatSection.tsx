@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { chatWithNotes } from '../utils/deepseekAPI';
+import { chatWithNotes, generateChatTitle } from '../utils/deepseekAPI';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { IdeaIcon, ChatIcon } from './icons';
@@ -27,6 +27,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const notes = getSubjectNotes(subjectId);
@@ -60,6 +61,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
 
     if (newSession) {
       setCurrentSessionId(newSession.id);
+      setIsSidebarOpen(false); // Close sidebar on mobile after creating chat
     }
   };
 
@@ -82,11 +84,18 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
 
     await addChatMessage(userMsg);
 
-    // Update session title if this is the first message
+    // Update session title if this is the first message (use AI to generate title)
     const currentSession = sessions.find(s => s.id === currentSessionId);
     if (currentSession && currentSession.title === 'New Chat') {
-      const title = userMessage.length > 50 ? userMessage.substring(0, 50) + '...' : userMessage;
-      await updateChatSession(currentSessionId, { title });
+      // Generate AI title in the background (don't wait for it)
+      generateChatTitle(userMessage).then(title => {
+        updateChatSession(currentSessionId, { title });
+      }).catch(err => {
+        console.error('Failed to generate chat title:', err);
+        // Fallback to truncated message
+        const fallbackTitle = userMessage.length > 40 ? userMessage.substring(0, 40) + '...' : userMessage;
+        updateChatSession(currentSessionId, { title: fallbackTitle });
+      });
     }
 
     try {
@@ -152,9 +161,33 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-16rem)] gap-4">
+    <div className="relative flex h-[calc(100vh-16rem)] gap-4">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="md:hidden fixed top-20 left-4 z-50 p-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600"
+        aria-label="Toggle chat sessions"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Chat Sessions */}
-      <div className="w-64 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex flex-col">
+      <div className={`
+        fixed md:relative inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        md:block
+      `}>
         <button
           onClick={handleNewChat}
           className="w-full px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium mb-4 flex items-center justify-center gap-2"
@@ -177,14 +210,19 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
                     ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent'
                 }`}
-                onClick={() => setCurrentSessionId(session.id)}
+                onClick={() => {
+                  setCurrentSessionId(session.id);
+                  setIsSidebarOpen(false); // Close sidebar on mobile
+                }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <ChatIcon size={14} />
+                      <div className="flex-shrink-0 flex items-center justify-center">
+                        <ChatIcon size={14} />
+                      </div>
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {session.title}
                       </p>
