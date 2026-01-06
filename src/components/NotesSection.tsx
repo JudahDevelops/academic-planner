@@ -140,51 +140,51 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
         </label>
 
         {uploadError && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-            <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+            <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
-            <p className="text-red-800 text-sm">{uploadError}</p>
+            <p className="text-red-800 dark:text-red-300 text-sm">{uploadError}</p>
           </div>
         )}
       </div>
 
       {/* Notes Grid */}
       {notes.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-600 text-lg mb-2">No notes uploaded yet</p>
-          <p className="text-gray-500 text-sm">Upload your first document to get started</p>
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">No notes uploaded yet</p>
+          <p className="text-gray-500 dark:text-gray-500 text-sm">Upload your first document to get started</p>
         </div>
       ) : (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Your Notes ({notes.length})
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {notes.map((note) => (
               <div
                 key={note.id}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="flex-shrink-0">{getFileIcon(note.fileType)}</div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-gray-900 truncate" title={note.title}>
+                      <h4 className="font-semibold text-gray-900 dark:text-white truncate" title={note.title}>
                         {note.title}
                       </h4>
-                      <p className="text-xs text-gray-500">{note.fileName}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{note.fileName}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => deleteNote(note.id)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium ml-2 flex-shrink-0"
+                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium ml-2 flex-shrink-0"
                   >
                     Delete
                   </button>
                 </div>
 
-                <div className="space-y-1 text-xs text-gray-600">
+                <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
                   <div className="flex justify-between">
                     <span>Size:</span>
                     <span className="font-medium">{formatFileSize(note.fileSize)}</span>
@@ -200,8 +200,8 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
                 </div>
 
                 {note.content && (
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <p className="text-xs text-gray-600 line-clamp-3">
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-3">
                       {note.content.substring(0, 150)}...
                     </p>
                   </div>

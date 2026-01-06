@@ -51,7 +51,10 @@ export function useSanityData<T>(docType: string) {
 
     try {
       setLoading(true);
-      const query = `*[_type == $docType && userId == $userId] | order(_createdAt desc)`;
+      // Chat messages should be ordered oldest first (ascending)
+      // Everything else should be newest first (descending)
+      const orderDirection = docType === 'chatMessage' ? 'asc' : 'desc';
+      const query = `*[_type == $docType && userId == $userId] | order(_createdAt ${orderDirection})`;
       const params = { docType, userId: user.id };
 
       let results = await sanityClient.fetch(query, params);

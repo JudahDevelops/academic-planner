@@ -126,7 +126,7 @@ export function ListView() {
             className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap ${
               filter === 'all'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
             whileTap={{ scale: 0.95 }}
           >
@@ -137,7 +137,7 @@ export function ListView() {
             className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap ${
               filter === 'active'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
             whileTap={{ scale: 0.95 }}
           >
@@ -148,7 +148,7 @@ export function ListView() {
             className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap ${
               filter === 'completed'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
             whileTap={{ scale: 0.95 }}
           >
