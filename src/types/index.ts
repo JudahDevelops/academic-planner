@@ -60,9 +60,19 @@ export interface Quiz {
   timeTaken?: number; // time taken in seconds
 }
 
+// Chat session for organizing conversations
+export interface ChatSession {
+  id: string;
+  subjectId: string;
+  title: string;
+  createdAt: string;
+  lastMessageAt: string;
+}
+
 // Chat message for NotebookLM-style interface
 export interface ChatMessage {
   id: string;
+  sessionId: string;
   subjectId: string;
   role: 'user' | 'assistant';
   content: string;

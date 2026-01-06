@@ -212,20 +212,20 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
               <div
                 className={`max-w-3xl px-4 py-3 rounded-lg ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                    ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                    : 'bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-800'
                 }`}
               >
                 {message.role === 'user' ? (
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 ) : (
-                  <div className="prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0">
+                  <div className="prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0 prose-headings:text-purple-900 dark:prose-headings:text-purple-100 prose-p:text-gray-800 dark:prose-p:text-gray-200 prose-strong:text-gray-900 dark:prose-strong:text-white prose-code:text-purple-700 dark:prose-code:text-purple-300 prose-a:text-blue-600 dark:prose-a:text-blue-400">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {message.content}
                     </ReactMarkdown>
                   </div>
                 )}
-                <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-blue-200' : 'text-gray-500'}`}>
+                <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-blue-200 dark:text-blue-300' : 'text-purple-600 dark:text-purple-400'}`}>
                   {new Date(message.timestamp).toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit',
@@ -238,11 +238,11 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="max-w-3xl px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700">
+            <div className="max-w-3xl px-4 py-3 rounded-lg bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-800">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-purple-400 dark:bg-purple-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-purple-400 dark:bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-purple-400 dark:bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           </div>

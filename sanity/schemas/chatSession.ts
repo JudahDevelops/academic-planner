@@ -1,21 +1,14 @@
 import { defineType, defineField } from 'sanity';
 
 export default defineType({
-  name: 'chatMessage',
-  title: 'Chat Message',
+  name: 'chatSession',
+  title: 'Chat Session',
   type: 'document',
   fields: [
     defineField({
       name: 'userId',
       title: 'User ID',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'sessionId',
-      title: 'Chat Session',
-      type: 'reference',
-      to: [{ type: 'chatSession' }],
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -26,26 +19,20 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'role',
-      title: 'Role',
+      name: 'title',
+      title: 'Title',
       type: 'string',
-      options: {
-        list: [
-          { title: 'User', value: 'user' },
-          { title: 'Assistant', value: 'assistant' },
-        ],
-      },
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'content',
-      title: 'Content',
-      type: 'text',
-      validation: (Rule) => Rule.required(),
+      name: 'createdAt',
+      title: 'Created At',
+      type: 'datetime',
+      initialValue: () => new Date().toISOString(),
     }),
     defineField({
-      name: 'timestamp',
-      title: 'Timestamp',
+      name: 'lastMessageAt',
+      title: 'Last Message At',
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
     }),
