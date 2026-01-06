@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { AssignmentsView } from './components/AssignmentsView';
 import { StudyHubView } from './components/StudyHubView';
@@ -13,6 +13,7 @@ import { ViewMode } from './types';
 
 function AppContent() {
   const { user } = useUser();
+  const { subjects, assignments, loading } = useApp();
   const [currentView, setCurrentView] = useState<ViewMode>('study-hub');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -20,11 +21,18 @@ function AppContent() {
   useSyncUser();
 
   // Check onboarding status when user loads
+  // Don't show onboarding if:
+  // 1. User has already completed it (localStorage check)
+  // 2. User already has data (existing subjects or assignments)
   useEffect(() => {
-    if (user?.id) {
-      setShowOnboarding(shouldShowOnboarding(user.id));
+    if (user?.id && !loading) {
+      const hasCompletedOnboarding = !shouldShowOnboarding(user.id);
+      const hasExistingData = subjects.length > 0 || assignments.length > 0;
+
+      // Only show onboarding for truly new users
+      setShowOnboarding(!hasCompletedOnboarding && !hasExistingData);
     }
-  }, [user?.id]);
+  }, [user?.id, subjects.length, assignments.length, loading]);
 
   // Listen for custom navigation events
   useEffect(() => {
