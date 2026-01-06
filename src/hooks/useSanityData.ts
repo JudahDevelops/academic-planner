@@ -35,6 +35,36 @@ function resolveReferences(doc: any): any {
   return resolved;
 }
 
+// Helper to convert plain IDs to Sanity references (opposite of resolveReferences)
+function convertToReferences(doc: any): any {
+  if (!doc) return doc;
+
+  const converted = { ...doc };
+
+  // Convert subjectId string to reference
+  if (converted.subjectId && typeof converted.subjectId === 'string') {
+    converted.subjectId = {
+      _type: 'reference',
+      _ref: converted.subjectId,
+    };
+  }
+
+  // Convert noteIds array of strings to references
+  if (converted.noteIds && Array.isArray(converted.noteIds)) {
+    converted.noteIds = converted.noteIds.map((id: any) => {
+      if (typeof id === 'string') {
+        return {
+          _type: 'reference',
+          _ref: id,
+        };
+      }
+      return id; // Already a reference object
+    });
+  }
+
+  return converted;
+}
+
 // Hook for fetching and managing data
 export function useSanityData<T>(docType: string) {
   const { user } = useUser();
@@ -91,10 +121,13 @@ export function useSanityData<T>(docType: string) {
     if (!user) return;
 
     try {
+      // Convert plain string IDs to Sanity references
+      const docWithReferences = convertToReferences(doc);
+
       const newDoc = await sanityClient.create({
         _type: docType,
         userId: user.id,
-        ...doc,
+        ...docWithReferences,
       });
 
       await fetchData(); // Refresh data
@@ -107,7 +140,10 @@ export function useSanityData<T>(docType: string) {
 
   const updateDocument = useCallback(async (id: string, updates: Partial<T>) => {
     try {
-      await sanityClient.patch(id).set(updates).commit();
+      // Convert plain string IDs to Sanity references
+      const updatesWithReferences = convertToReferences(updates);
+
+      await sanityClient.patch(id).set(updatesWithReferences).commit();
       await fetchData(); // Refresh data
     } catch (err) {
       console.error(`Error updating ${docType}:`, err);
