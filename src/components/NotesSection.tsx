@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { extractText, validateFileSize, getFileType } from '../utils/textExtraction';
+import { FolderIcon, AssignmentsIcon } from './icons';
 
 interface NotesSectionProps {
   subjectId: string;
@@ -70,13 +71,21 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
     });
   };
 
-  const getFileIcon = (fileType: string): string => {
+  const getFileIcon = (fileType: string) => {
+    const iconProps = { size: 28 };
     switch (fileType) {
-      case 'pdf': return '📄';
-      case 'docx': return '📝';
-      case 'image': return '🖼️';
-      case 'md': return '📋';
-      default: return '📄';
+      case 'pdf': return <FolderIcon {...iconProps} />;
+      case 'docx': return <AssignmentsIcon {...iconProps} />;
+      case 'image':
+        return (
+          <svg width={iconProps.size} height={iconProps.size} viewBox="0 0 24 24" fill="none" className="text-blue-600 dark:text-blue-400">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+            <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        );
+      case 'md': return <AssignmentsIcon {...iconProps} />;
+      default: return <FolderIcon {...iconProps} />;
     }
   };
 
@@ -104,12 +113,21 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
         >
           {uploading ? (
             <div>
-              <div className="text-4xl mb-2">⏳</div>
+              <div className="flex justify-center mb-2">
+                <svg className="animate-spin h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
               <p className="text-gray-600">Processing files...</p>
             </div>
           ) : (
             <div>
-              <div className="text-4xl mb-2">📤</div>
+              <div className="flex justify-center mb-2">
+                <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
               <p className="text-gray-900 font-medium mb-1">Upload Notes & Documents</p>
               <p className="text-sm text-gray-600 mb-2">
                 PDF, DOCX, TXT, MD, or Images (Max 5MB per file)
@@ -122,8 +140,11 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
         </label>
 
         {uploadError && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 text-sm">⚠️ {uploadError}</p>
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+            <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <p className="text-red-800 text-sm">{uploadError}</p>
           </div>
         )}
       </div>
@@ -147,7 +168,7 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-2xl flex-shrink-0">{getFileIcon(note.fileType)}</span>
+                    <div className="flex-shrink-0">{getFileIcon(note.fileType)}</div>
                     <div className="min-w-0 flex-1">
                       <h4 className="font-semibold text-gray-900 truncate" title={note.title}>
                         {note.title}

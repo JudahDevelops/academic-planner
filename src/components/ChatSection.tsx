@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { chatWithNotes } from '../utils/deepseekAPI';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { IdeaIcon } from './icons';
 
 interface ChatSectionProps {
   subjectId: string;
@@ -132,18 +133,18 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
       {/* Header */}
-      <div className="bg-white rounded-t-lg border border-b-0 border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="font-semibold text-gray-900">AI Study Assistant</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white">AI Study Assistant</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {selectedNoteIds.length} of {notes.length} {notes.length === 1 ? 'note' : 'notes'} selected • {chatHistory.length} messages in history
             </p>
           </div>
           {chatHistory.length > 0 && (
             <button
               onClick={handleClearChat}
-              className="text-sm text-red-600 hover:text-red-800 font-medium"
+              className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
             >
               Clear Chat
             </button>
@@ -152,8 +153,8 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
 
         {/* Note Selection */}
         {notes.length > 0 && (
-          <div className="border-t border-gray-200 pt-3">
-            <label className="block text-xs font-medium text-gray-700 mb-2">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Notes for AI Context
             </label>
             <div className="flex flex-wrap gap-2">
@@ -162,8 +163,8 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
                   key={note.id}
                   className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm cursor-pointer transition-colors ${
                     selectedNoteIds.includes(note.id)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   <input
@@ -181,21 +182,21 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 bg-white border-l border-r border-gray-200 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 bg-white dark:bg-gray-800 border-l border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4 space-y-4">
         {notes.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 mb-2">No notes available</p>
-            <p className="text-sm text-gray-500">Upload notes to start chatting with your study assistant</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-2">No notes available</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">Upload notes to start chatting with your study assistant</p>
           </div>
         ) : chatHistory.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">Start a conversation about your notes!</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Start a conversation about your notes!</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {suggestedPrompts.map((prompt, index) => (
                 <button
                   key={index}
                   onClick={() => setInputMessage(prompt)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+                  className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
                 >
                   {prompt}
                 </button>
@@ -212,7 +213,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
                 className={`max-w-3xl px-4 py-3 rounded-lg ${
                   message.role === 'user'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                 }`}
               >
                 {message.role === 'user' ? (
@@ -237,11 +238,11 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="max-w-3xl px-4 py-3 rounded-lg bg-gray-100">
+            <div className="max-w-3xl px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           </div>
@@ -251,9 +252,9 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white rounded-b-lg border border-t-0 border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg border border-t-0 border-gray-200 dark:border-gray-700 p-4">
         {error && (
-          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+          <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300 text-sm">
             {error}
           </div>
         )}
@@ -266,19 +267,20 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
             placeholder={notes.length === 0 ? "Upload notes first..." : "Ask anything about your notes... (Press Enter to send)"}
             disabled={isLoading || notes.length === 0}
             rows={3}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:bg-gray-100"
+            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
           />
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading || notes.length === 0}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed self-end"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed self-end"
           >
             {isLoading ? '...' : 'Send'}
           </button>
         </div>
 
-        <p className="text-xs text-gray-500 mt-2">
-          💡 Tip: Ask for summaries, explanations, study guides, or practice questions
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
+          <IdeaIcon size={14} />
+          Tip: Ask for summaries, explanations, study guides, or practice questions
         </p>
       </div>
     </div>

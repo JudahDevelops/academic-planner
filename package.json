@@ -1,5 +1,5 @@
 {
-  "name": "academic-planner",
+  "name": "studyflow",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,18 +7,27 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sanity": "sanity dev",
+    "sanity:deploy": "sanity deploy"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.59.2",
+    "@sanity/client": "^7.13.2",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.24.0",
+    "lucide-react": "^0.562.0",
     "mammoth": "^1.11.0",
     "pdfjs-dist": "^5.4.530",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@sanity/vision": "^5.1.0",
     "@tailwindcss/typography": "^0.5.19",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
@@ -29,6 +38,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
+    "sanity": "^5.1.0",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
     "vite": "^7.2.4"

@@ -81,3 +81,24 @@ export interface TimetableEntry {
 }
 
 export type ViewMode = 'assignments' | 'study-hub' | 'timetable' | 'analytics';
+
+// Gamification types for UI
+export interface UserStats {
+  currentStreak: number;
+  longestStreak: number;
+  totalXP: number;
+  level: number;
+  completedAssignments: number;
+  quizzesTaken: number;
+  studyTimeMinutes: number;
+  lastActiveDate: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt?: string;
+  progress?: number; // 0-100 for partially unlocked achievements
+}

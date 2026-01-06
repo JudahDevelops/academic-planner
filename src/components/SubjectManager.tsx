@@ -42,26 +42,26 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Manage Subjects</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manage Subjects</h2>
             <button
               onClick={onClose}
-              className="text-gray-600 hover:text-gray-900 text-2xl leading-none"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-2xl leading-none"
             >
               ×
             </button>
           </div>
 
           {/* Add New Subject */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-4">Add New Subject</h3>
+          <div className="mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Add New Subject</h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Subject Name *
                 </label>
                 <input
@@ -70,12 +70,12 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
                   onChange={(e) => setNewSubjectName(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddSubject()}
                   placeholder="e.g., Machine Learning"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Color
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -85,7 +85,7 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
                       onClick={() => setSelectedColor(color)}
                       className={`w-10 h-10 rounded-lg transition-all ${
                         selectedColor === color
-                          ? 'ring-2 ring-offset-2 ring-gray-900 scale-110'
+                          ? 'ring-2 ring-offset-2 dark:ring-offset-gray-900 ring-gray-900 dark:ring-white scale-110'
                           : 'hover:scale-105'
                       }`}
                       style={{ backgroundColor: color }}
@@ -98,7 +98,7 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
               <button
                 onClick={handleAddSubject}
                 disabled={!newSubjectName.trim()}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
                 Add Subject
               </button>
@@ -107,12 +107,12 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
 
           {/* Existing Subjects */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
               Your Subjects ({subjects.length})
             </h3>
 
             {subjects.length === 0 ? (
-              <p className="text-gray-600 text-center py-8">
+              <p className="text-gray-600 dark:text-gray-400 text-center py-8">
                 No subjects yet. Add your first subject above!
               </p>
             ) : (
@@ -120,7 +120,7 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
                 {subjects.map((subject) => (
                   <div
                     key={subject.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div
@@ -128,14 +128,14 @@ export function SubjectManager({ onClose }: SubjectManagerProps) {
                         style={{ backgroundColor: subject.color }}
                       />
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{subject.name}</h4>
-                        <p className="text-xs text-gray-500">{subject.color}</p>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{subject.name}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{subject.color}</p>
                       </div>
                     </div>
 
                     <button
                       onClick={() => handleDeleteSubject(subject.id, subject.name)}
-                      className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm"
+                      className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg font-medium text-sm"
                     >
                       Delete
                     </button>

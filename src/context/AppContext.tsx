@@ -1,277 +1,242 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useMemo, useCallback } from 'react';
 import { Assignment, Subject, Note, Quiz, ChatMessage, TimetableEntry } from '../types';
+import {
+  useSubjects,
+  useAssignments,
+  useNotes,
+  useQuizzes,
+  useChatMessages,
+  useTimetableEntries,
+} from '../hooks/useSanityData';
+import { sanityClient } from '../lib/sanity';
 
 interface AppContextType {
   // Subjects
   subjects: Subject[];
-  addSubject: (subject: Omit<Subject, 'id'>) => void;
-  deleteSubject: (id: string) => void;
+  addSubject: (subject: Omit<Subject, 'id'>) => Promise<void>;
+  deleteSubject: (id: string) => Promise<void>;
 
   // Assignments
   assignments: Assignment[];
-  addAssignment: (assignment: Omit<Assignment, 'id'>) => void;
-  updateAssignment: (id: string, assignment: Partial<Assignment>) => void;
-  deleteAssignment: (id: string) => void;
+  addAssignment: (assignment: Omit<Assignment, 'id'>) => Promise<void>;
+  updateAssignment: (id: string, assignment: Partial<Assignment>) => Promise<void>;
+  deleteAssignment: (id: string) => Promise<void>;
 
   // Notes
   notes: Note[];
-  addNote: (note: Omit<Note, 'id'>) => void;
-  deleteNote: (id: string) => void;
+  addNote: (note: Omit<Note, 'id'>) => Promise<void>;
+  deleteNote: (id: string) => Promise<void>;
   getSubjectNotes: (subjectId: string) => Note[];
 
   // Quizzes
   quizzes: Quiz[];
-  addQuiz: (quiz: Omit<Quiz, 'id'>) => void;
-  updateQuiz: (id: string, quiz: Partial<Quiz>) => void;
-  deleteQuiz: (id: string) => void;
+  addQuiz: (quiz: Omit<Quiz, 'id'>) => Promise<void>;
+  updateQuiz: (id: string, quiz: Partial<Quiz>) => Promise<void>;
+  deleteQuiz: (id: string) => Promise<void>;
   getSubjectQuizzes: (subjectId: string) => Quiz[];
 
   // Chat
   chatMessages: ChatMessage[];
-  addChatMessage: (message: Omit<ChatMessage, 'id'>) => void;
+  addChatMessage: (message: Omit<ChatMessage, 'id'>) => Promise<void>;
   getSubjectChatHistory: (subjectId: string) => ChatMessage[];
-  clearSubjectChat: (subjectId: string) => void;
+  clearSubjectChat: (subjectId: string) => Promise<void>;
 
   // Timetable
   timetableEntries: TimetableEntry[];
-  addTimetableEntry: (entry: Omit<TimetableEntry, 'id'>) => void;
-  updateTimetableEntry: (id: string, entry: Partial<TimetableEntry>) => void;
-  deleteTimetableEntry: (id: string) => void;
+  addTimetableEntry: (entry: Omit<TimetableEntry, 'id'>) => Promise<void>;
+  updateTimetableEntry: (id: string, entry: Partial<TimetableEntry>) => Promise<void>;
+  deleteTimetableEntry: (id: string) => Promise<void>;
   getTimetableByDay: (dayOfWeek: number) => TimetableEntry[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  SUBJECTS: 'academic-hub-subjects',
-  ASSIGNMENTS: 'academic-hub-assignments',
-  NOTES: 'academic-hub-notes',
-  QUIZZES: 'academic-hub-quizzes',
-  CHAT: 'academic-hub-chat',
-  TIMETABLE: 'academic-hub-timetable',
-};
-
-const DEFAULT_SUBJECTS: Subject[] = [];
-
 export function AppProvider({ children }: { children: ReactNode }) {
-  // Subjects
-  const [subjects, setSubjects] = useState<Subject[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.SUBJECTS);
-    return stored ? JSON.parse(stored) : DEFAULT_SUBJECTS;
-  });
-
-  // Assignments
-  const [assignments, setAssignments] = useState<Assignment[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS);
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  // Notes
-  const [notes, setNotes] = useState<Note[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.NOTES);
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  // Quizzes
-  const [quizzes, setQuizzes] = useState<Quiz[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.QUIZZES);
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  // Chat messages
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.CHAT);
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  // Timetable entries
-  const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.TIMETABLE);
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  // Persist to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
-  }, [subjects]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
-  }, [assignments]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
-  }, [notes]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
-  }, [quizzes]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CHAT, JSON.stringify(chatMessages));
-  }, [chatMessages]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(timetableEntries));
-  }, [timetableEntries]);
+  // Use Sanity hooks for data
+  const subjectsHook = useSubjects();
+  const assignmentsHook = useAssignments();
+  const notesHook = useNotes();
+  const quizzesHook = useQuizzes();
+  const chatMessagesHook = useChatMessages();
+  const timetableEntriesHook = useTimetableEntries();
 
   // Subject functions
-  const addSubject = (subject: Omit<Subject, 'id'>) => {
-    const newSubject: Subject = {
-      ...subject,
-      id: Date.now().toString(),
-    };
-    setSubjects([...subjects, newSubject]);
-  };
+  const addSubject = useCallback(async (subject: Omit<Subject, 'id'>) => {
+    await subjectsHook.addDocument(subject);
+  }, [subjectsHook]);
 
-  const deleteSubject = (id: string) => {
-    setSubjects(subjects.filter(s => s.id !== id));
-    // Cascade delete
-    setAssignments(assignments.filter(a => a.subjectId !== id));
-    setNotes(notes.filter(n => n.subjectId !== id));
-    setQuizzes(quizzes.filter(q => q.subjectId !== id));
-    setChatMessages(chatMessages.filter(m => m.subjectId !== id));
-    setTimetableEntries(timetableEntries.filter(e => e.subjectId !== id));
-  };
+  const deleteSubject = useCallback(async (id: string) => {
+    // Cascade delete related documents
+    const relatedAssignments = assignmentsHook.data.filter(a => a.subjectId === id);
+    const relatedNotes = notesHook.data.filter(n => n.subjectId === id);
+    const relatedQuizzes = quizzesHook.data.filter(q => q.subjectId === id);
+    const relatedMessages = chatMessagesHook.data.filter(m => m.subjectId === id);
+    const relatedTimetable = timetableEntriesHook.data.filter(e => e.subjectId === id);
+
+    await Promise.all([
+      ...relatedAssignments.map(a => sanityClient.delete(a.id)),
+      ...relatedNotes.map(n => sanityClient.delete(n.id)),
+      ...relatedQuizzes.map(q => sanityClient.delete(q.id)),
+      ...relatedMessages.map(m => sanityClient.delete(m.id)),
+      ...relatedTimetable.map(e => sanityClient.delete(e.id)),
+      subjectsHook.deleteDocument(id),
+    ]);
+
+    // Refresh all data
+    await Promise.all([
+      subjectsHook.refresh(),
+      assignmentsHook.refresh(),
+      notesHook.refresh(),
+      quizzesHook.refresh(),
+      chatMessagesHook.refresh(),
+      timetableEntriesHook.refresh(),
+    ]);
+  }, [subjectsHook, assignmentsHook, notesHook, quizzesHook, chatMessagesHook, timetableEntriesHook]);
 
   // Assignment functions
-  const addAssignment = (assignment: Omit<Assignment, 'id'>) => {
-    const newAssignment: Assignment = {
-      ...assignment,
-      id: Date.now().toString(),
-    };
-    setAssignments([...assignments, newAssignment]);
-  };
+  const addAssignment = useCallback(async (assignment: Omit<Assignment, 'id'>) => {
+    await assignmentsHook.addDocument(assignment);
+  }, [assignmentsHook]);
 
-  const updateAssignment = (id: string, updatedFields: Partial<Assignment>) => {
-    setAssignments(assignments.map(a =>
-      a.id === id ? { ...a, ...updatedFields } : a
-    ));
-  };
+  const updateAssignment = useCallback(async (id: string, updates: Partial<Assignment>) => {
+    await assignmentsHook.updateDocument(id, updates);
+  }, [assignmentsHook]);
 
-  const deleteAssignment = (id: string) => {
-    setAssignments(assignments.filter(a => a.id !== id));
-  };
+  const deleteAssignment = useCallback(async (id: string) => {
+    await assignmentsHook.deleteDocument(id);
+  }, [assignmentsHook]);
 
   // Note functions
-  const addNote = (note: Omit<Note, 'id'>) => {
-    const newNote: Note = {
-      ...note,
-      id: Date.now().toString(),
-    };
-    setNotes([...notes, newNote]);
-  };
+  const addNote = useCallback(async (note: Omit<Note, 'id'>) => {
+    await notesHook.addDocument(note);
+  }, [notesHook]);
 
-  const deleteNote = (id: string) => {
-    setNotes(notes.filter(n => n.id !== id));
-    // Remove note references from quizzes
-    setQuizzes(quizzes.map(q => ({
-      ...q,
-      noteIds: q.noteIds.filter(nId => nId !== id),
-    })));
-  };
+  const deleteNote = useCallback(async (id: string) => {
+    // Update quizzes that reference this note
+    const quizzesWithNote = quizzesHook.data.filter(q => q.noteIds.includes(id));
+    await Promise.all(
+      quizzesWithNote.map(quiz =>
+        quizzesHook.updateDocument(quiz.id, {
+          noteIds: quiz.noteIds.filter(nId => nId !== id),
+        })
+      )
+    );
+    await notesHook.deleteDocument(id);
+  }, [notesHook, quizzesHook]);
 
-  const getSubjectNotes = (subjectId: string) => {
-    return notes.filter(n => n.subjectId === subjectId);
-  };
+  const getSubjectNotes = useCallback((subjectId: string) => {
+    return notesHook.data.filter(n => n.subjectId === subjectId);
+  }, [notesHook.data]);
 
   // Quiz functions
-  const addQuiz = (quiz: Omit<Quiz, 'id'>) => {
-    const newQuiz: Quiz = {
-      ...quiz,
-      id: Date.now().toString(),
-    };
-    setQuizzes([...quizzes, newQuiz]);
-  };
+  const addQuiz = useCallback(async (quiz: Omit<Quiz, 'id'>) => {
+    await quizzesHook.addDocument(quiz);
+  }, [quizzesHook]);
 
-  const updateQuiz = (id: string, updatedFields: Partial<Quiz>) => {
-    setQuizzes(quizzes.map(q =>
-      q.id === id ? { ...q, ...updatedFields } : q
-    ));
-  };
+  const updateQuiz = useCallback(async (id: string, updates: Partial<Quiz>) => {
+    await quizzesHook.updateDocument(id, updates);
+  }, [quizzesHook]);
 
-  const deleteQuiz = (id: string) => {
-    setQuizzes(quizzes.filter(q => q.id !== id));
-  };
+  const deleteQuiz = useCallback(async (id: string) => {
+    await quizzesHook.deleteDocument(id);
+  }, [quizzesHook]);
 
-  const getSubjectQuizzes = (subjectId: string) => {
-    return quizzes.filter(q => q.subjectId === subjectId);
-  };
+  const getSubjectQuizzes = useCallback((subjectId: string) => {
+    return quizzesHook.data.filter(q => q.subjectId === subjectId);
+  }, [quizzesHook.data]);
 
   // Chat functions
-  const addChatMessage = (message: Omit<ChatMessage, 'id'>) => {
-    const newMessage: ChatMessage = {
-      ...message,
-      id: Date.now().toString(),
-    };
-    // Use functional update to ensure we get the latest state
-    setChatMessages(prev => [...prev, newMessage]);
-  };
+  const addChatMessage = useCallback(async (message: Omit<ChatMessage, 'id'>) => {
+    await chatMessagesHook.addDocument(message);
+  }, [chatMessagesHook]);
 
-  const getSubjectChatHistory = (subjectId: string) => {
-    return chatMessages.filter(m => m.subjectId === subjectId);
-  };
+  const getSubjectChatHistory = useCallback((subjectId: string) => {
+    return chatMessagesHook.data.filter(m => m.subjectId === subjectId);
+  }, [chatMessagesHook.data]);
 
-  const clearSubjectChat = (subjectId: string) => {
-    setChatMessages(chatMessages.filter(m => m.subjectId !== subjectId));
-  };
+  const clearSubjectChat = useCallback(async (subjectId: string) => {
+    const messages = chatMessagesHook.data.filter(m => m.subjectId === subjectId);
+    await Promise.all(messages.map(m => sanityClient.delete(m.id)));
+    await chatMessagesHook.refresh();
+  }, [chatMessagesHook]);
 
   // Timetable functions
-  const addTimetableEntry = (entry: Omit<TimetableEntry, 'id'>) => {
-    const newEntry: TimetableEntry = {
-      ...entry,
-      id: Date.now().toString(),
-    };
-    setTimetableEntries([...timetableEntries, newEntry]);
-  };
+  const addTimetableEntry = useCallback(async (entry: Omit<TimetableEntry, 'id'>) => {
+    await timetableEntriesHook.addDocument(entry);
+  }, [timetableEntriesHook]);
 
-  const updateTimetableEntry = (id: string, updatedFields: Partial<TimetableEntry>) => {
-    setTimetableEntries(timetableEntries.map(e =>
-      e.id === id ? { ...e, ...updatedFields } : e
-    ));
-  };
+  const updateTimetableEntry = useCallback(async (id: string, updates: Partial<TimetableEntry>) => {
+    await timetableEntriesHook.updateDocument(id, updates);
+  }, [timetableEntriesHook]);
 
-  const deleteTimetableEntry = (id: string) => {
-    setTimetableEntries(timetableEntries.filter(e => e.id !== id));
-  };
+  const deleteTimetableEntry = useCallback(async (id: string) => {
+    await timetableEntriesHook.deleteDocument(id);
+  }, [timetableEntriesHook]);
 
-  const getTimetableByDay = (dayOfWeek: number) => {
-    return timetableEntries
+  const getTimetableByDay = useCallback((dayOfWeek: number) => {
+    return timetableEntriesHook.data
       .filter(e => e.dayOfWeek === dayOfWeek)
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  };
+  }, [timetableEntriesHook.data]);
 
-  return (
-    <AppContext.Provider value={{
-      subjects,
+  const contextValue = useMemo(
+    () => ({
+      subjects: subjectsHook.data,
       addSubject,
       deleteSubject,
-      assignments,
+      assignments: assignmentsHook.data,
       addAssignment,
       updateAssignment,
       deleteAssignment,
-      notes,
+      notes: notesHook.data,
       addNote,
       deleteNote,
       getSubjectNotes,
-      quizzes,
+      quizzes: quizzesHook.data,
       addQuiz,
       updateQuiz,
       deleteQuiz,
       getSubjectQuizzes,
-      chatMessages,
+      chatMessages: chatMessagesHook.data,
       addChatMessage,
       getSubjectChatHistory,
       clearSubjectChat,
-      timetableEntries,
+      timetableEntries: timetableEntriesHook.data,
       addTimetableEntry,
       updateTimetableEntry,
       deleteTimetableEntry,
       getTimetableByDay,
-    }}>
-      {children}
-    </AppContext.Provider>
+    }),
+    [
+      subjectsHook.data,
+      addSubject,
+      deleteSubject,
+      assignmentsHook.data,
+      addAssignment,
+      updateAssignment,
+      deleteAssignment,
+      notesHook.data,
+      addNote,
+      deleteNote,
+      getSubjectNotes,
+      quizzesHook.data,
+      addQuiz,
+      updateQuiz,
+      deleteQuiz,
+      getSubjectQuizzes,
+      chatMessagesHook.data,
+      addChatMessage,
+      getSubjectChatHistory,
+      clearSubjectChat,
+      timetableEntriesHook.data,
+      addTimetableEntry,
+      updateTimetableEntry,
+      deleteTimetableEntry,
+      getTimetableByDay,
+    ]
   );
+
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {

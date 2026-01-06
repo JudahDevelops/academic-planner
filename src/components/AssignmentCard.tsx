@@ -1,5 +1,6 @@
 import { Assignment } from '../types';
 import { useApp } from '../context/AppContext';
+import { CalendarIcon } from './icons';
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -48,17 +49,17 @@ export function AssignmentCard({ assignment, onEdit }: AssignmentCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{assignment.title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{assignment.title}</h3>
           {course && (
             <div className="flex items-center gap-2 mb-2">
               <span
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: course.color }}
               />
-              <span className="text-sm text-gray-600">{course.name}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">{course.name}</span>
             </div>
           )}
         </div>
@@ -66,13 +67,13 @@ export function AssignmentCard({ assignment, onEdit }: AssignmentCardProps) {
         <div className="flex gap-2">
           <button
             onClick={() => onEdit(assignment)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
           >
             Edit
           </button>
           <button
             onClick={() => deleteAssignment(assignment.id)}
-            className="text-red-600 hover:text-red-800 text-sm font-medium"
+            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
           >
             Delete
           </button>
@@ -80,7 +81,7 @@ export function AssignmentCard({ assignment, onEdit }: AssignmentCardProps) {
       </div>
 
       {assignment.description && (
-        <p className="text-sm text-gray-600 mb-3">{assignment.description}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{assignment.description}</p>
       )}
 
       <div className="flex flex-wrap gap-2 mb-3">
@@ -101,16 +102,28 @@ export function AssignmentCard({ assignment, onEdit }: AssignmentCardProps) {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className={`text-sm font-medium ${
-          isOverdue ? 'text-red-600' : isDueSoon ? 'text-orange-600' : 'text-gray-600'
+        <div className={`text-sm font-medium flex items-center gap-1.5 ${
+          isOverdue ? 'text-red-600 dark:text-red-400' : isDueSoon ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400'
         }`}>
-          {isOverdue ? '⚠️ Overdue: ' : '📅 Due: '}{formatDueDate()}
+          {isOverdue ? (
+            <>
+              <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              Overdue:
+            </>
+          ) : (
+            <>
+              <CalendarIcon size={16} />
+              Due:
+            </>
+          )} {formatDueDate()}
         </div>
 
         <select
           value={assignment.status}
           onChange={(e) => updateAssignment(assignment.id, { status: e.target.value as any })}
-          className="text-sm px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="text-sm px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
         >
           <option value="not-started">Not Started</option>
           <option value="in-progress">In Progress</option>

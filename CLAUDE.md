@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Academic Planner is a React TypeScript application for student assignment tracking and academic planning. It features multiple view modes (List, Calendar, Timeline, Analytics) with localStorage persistence for client-side data storage.
+StudyFlow is a React TypeScript application for student assignment tracking and AI-powered study management. It features multiple view modes (Study Hub, Timetable, Assignments, Overview) with Sanity CMS for data persistence and DeepSeek AI integration for study assistance.
 
 ## Development Commands
 
