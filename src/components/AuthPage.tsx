@@ -13,7 +13,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <AnimatePresence mode="wait">
         <motion.div
           className="w-full flex flex-col items-center"
@@ -32,49 +32,20 @@ export function AuthPage() {
             <Logo variant="full" size={60} />
           </motion.div>
 
-          {/* Auth Component */}
+          {/* Auth Component - No wrapper, let Clerk handle its own styling */}
           <motion.div
-            className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="flex justify-center">
-              {isSignUp ? (
-                <SignUp
-                  appearance={{
-                    elements: {
-                      rootBox: 'w-full',
-                      card: 'shadow-none',
-                    },
-                  }}
-                  routing="hash"
-                />
-              ) : (
-                <SignIn
-                  appearance={{
-                    elements: {
-                      rootBox: 'w-full',
-                      card: 'shadow-none',
-                    },
-                  }}
-                  routing="hash"
-                />
-              )}
-            </div>
-
-            {/* Toggle between sign in and sign up */}
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
-              >
-                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-              </button>
-            </div>
+            {isSignUp ? (
+              <SignUp routing="hash" />
+            ) : (
+              <SignIn routing="hash" />
+            )}
           </motion.div>
 
-          {/* Back to landing */}
+          {/* Toggle between sign in and sign up */}
           <motion.div
             className="mt-6 text-center"
             initial={{ opacity: 0 }}
@@ -82,8 +53,23 @@ export function AuthPage() {
             transition={{ delay: 0.5 }}
           >
             <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors"
+            >
+              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+            </button>
+          </motion.div>
+
+          {/* Back to landing */}
+          <motion.div
+            className="mt-4 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <button
               onClick={() => setShowAuth(false)}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               ← Back to home
             </button>
