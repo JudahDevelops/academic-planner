@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { sanityClient } from '../lib/sanity';
-import type { Subject, Assignment, Note, Quiz, ChatMessage, TimetableEntry } from '../types';
+import type { Subject, Assignment, Note, Quiz, ChatSession, ChatMessage, TimetableEntry } from '../types';
 
 // Helper to convert Sanity references to IDs
 function resolveReferences(doc: any): any {
@@ -187,6 +187,10 @@ export function useNotes() {
 
 export function useQuizzes() {
   return useSanityData<Quiz>('quiz');
+}
+
+export function useChatSessions() {
+  return useSanityData<ChatSession>('chatSession');
 }
 
 export function useChatMessages() {
