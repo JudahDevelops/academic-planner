@@ -62,8 +62,12 @@ export function Logo({ className = '', size = 40, variant = 'full' }: LogoProps)
     <div className={`flex items-center gap-3 ${className}`}>
       {logoIcon}
       <span
-        className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap"
-        style={{ fontSize: size * 0.6 }}
+        className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap"
+        style={{
+          fontSize: size * 0.6,
+          lineHeight: 1.2,
+          paddingBottom: '0.1em'
+        }}
       >
         StudyFlow
       </span>

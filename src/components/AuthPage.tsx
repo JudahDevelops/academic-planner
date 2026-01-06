@@ -16,7 +16,7 @@ export function AuthPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <AnimatePresence mode="wait">
         <motion.div
-          className="max-w-md w-full"
+          className="w-full flex flex-col items-center"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
@@ -34,32 +34,34 @@ export function AuthPage() {
 
           {/* Auth Component */}
           <motion.div
-            className="bg-white rounded-2xl shadow-xl p-8"
+            className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {isSignUp ? (
-              <SignUp
-                appearance={{
-                  elements: {
-                    rootBox: 'w-full',
-                    card: 'shadow-none',
-                  },
-                }}
-                routing="hash"
-              />
-            ) : (
-              <SignIn
-                appearance={{
-                  elements: {
-                    rootBox: 'w-full',
-                    card: 'shadow-none',
-                  },
-                }}
-                routing="hash"
-              />
-            )}
+            <div className="flex justify-center">
+              {isSignUp ? (
+                <SignUp
+                  appearance={{
+                    elements: {
+                      rootBox: 'w-full',
+                      card: 'shadow-none',
+                    },
+                  }}
+                  routing="hash"
+                />
+              ) : (
+                <SignIn
+                  appearance={{
+                    elements: {
+                      rootBox: 'w-full',
+                      card: 'shadow-none',
+                    },
+                  }}
+                  routing="hash"
+                />
+              )}
+            </div>
 
             {/* Toggle between sign in and sign up */}
             <div className="mt-6 text-center">
