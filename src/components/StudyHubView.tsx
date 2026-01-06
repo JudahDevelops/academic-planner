@@ -135,7 +135,7 @@ export function StudyHubView() {
                 onClick={() => setShowSubjectManager(true)}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 font-semibold text-lg shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all transform hover:scale-105"
               >
-                <SparklesIcon size={20} />
+                <SparklesIcon size={20} variant="white" />
                 Create Your First Subject
               </button>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-4 flex items-center justify-center gap-1">

@@ -85,7 +85,7 @@ export function ListView() {
               }}
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 font-semibold text-lg shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all transform hover:scale-105"
             >
-              <StudyIcon size={20} />
+              <StudyIcon size={20} variant="white" />
               Go to Study Hub
             </a>
           </div>
