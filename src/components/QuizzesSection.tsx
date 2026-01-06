@@ -105,31 +105,31 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
   return (
     <div>
       {/* Quiz Generator */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Generate AI Quiz</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Generate AI Quiz</h3>
 
         {notes.length === 0 ? (
-          <p className="text-gray-600 text-sm">Upload notes first to generate quizzes</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">Upload notes first to generate quizzes</p>
         ) : (
           <div className="space-y-4">
             {/* Note Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Select Notes to Quiz From
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                 {notes.map((note) => (
                   <label
                     key={note.id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-600 rounded cursor-pointer"
                   >
                     <input
                       type="checkbox"
                       checked={selectedNoteIds.includes(note.id)}
                       onChange={() => toggleNoteSelection(note.id)}
-                      className="rounded text-blue-600"
+                      className="rounded text-blue-600 dark:text-blue-400"
                     />
-                    <span className="text-sm text-gray-900">{note.title}</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{note.title}</span>
                   </label>
                 ))}
               </div>
@@ -137,7 +137,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
 
             {/* Question Count */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Number of Questions: {questionCount}
               </label>
               <input
@@ -149,7 +149,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                 onChange={(e) => setQuestionCount(Number(e.target.value))}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                 <span>10</span>
                 <span>30</span>
                 <span>50</span>
@@ -163,13 +163,13 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                   type="checkbox"
                   checked={timeLimit !== undefined}
                   onChange={(e) => setTimeLimit(e.target.checked ? 30 : undefined)}
-                  className="rounded text-blue-600"
+                  className="rounded text-blue-600 dark:text-blue-400"
                 />
-                <span className="text-sm font-medium text-gray-700">Enable Timer</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Timer</span>
               </label>
               {timeLimit !== undefined && (
                 <div>
-                  <label className="block text-sm text-gray-600 mb-2">
+                  <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
                     Time Limit: {timeLimit} minutes
                   </label>
                   <input
@@ -181,7 +181,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                     onChange={(e) => setTimeLimit(Number(e.target.value))}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <span>5 min</span>
                     <span>60 min</span>
                     <span>120 min</span>
@@ -197,9 +197,9 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                   type="checkbox"
                   checked={showInstantFeedback}
                   onChange={(e) => setShowInstantFeedback(e.target.checked)}
-                  className="rounded text-blue-600"
+                  className="rounded text-blue-600 dark:text-blue-400"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Show if answer is correct after each question
                 </span>
               </label>
@@ -209,7 +209,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
             <button
               onClick={handleGenerateQuiz}
               disabled={generatingQuiz || selectedNoteIds.length === 0}
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {generatingQuiz ? (
                 <>
@@ -221,14 +221,14 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                 </>
               ) : (
                 <>
-                  <SparklesIcon size={18} />
+                  <SparklesIcon size={18} variant="white" />
                   <span>Generate {questionCount}-Question Quiz</span>
                 </>
               )}
             </button>
 
             {generateError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300 text-sm">
                 {generateError}
               </div>
             )}
@@ -238,25 +238,25 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
 
       {/* Quiz List */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Your Quizzes ({quizzes.length})
         </h3>
 
         {quizzes.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-600">No quizzes yet</p>
-            <p className="text-gray-500 text-sm mt-1">Generate your first quiz above</p>
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400">No quizzes yet</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">Generate your first quiz above</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {quizzes.map((quiz) => (
               <div
                 key={quiz.id}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
               >
-                <h4 className="font-semibold text-gray-900 mb-2">{quiz.title}</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{quiz.title}</h4>
 
-                <div className="space-y-1 text-sm text-gray-600 mb-4">
+                <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400 mb-4">
                   <div className="flex justify-between">
                     <span>Questions:</span>
                     <span className="font-medium">{quiz.questions.length}</span>
@@ -296,21 +296,21 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleTakeQuiz(quiz)}
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    className="flex-1 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 text-sm font-medium"
                   >
                     {quiz.score !== undefined ? 'Retake' : 'Take Quiz'}
                   </button>
                   {quiz.score !== undefined && (
                     <button
                       onClick={() => handleReviewQuiz(quiz)}
-                      className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm font-medium"
+                      className="flex-1 bg-gray-600 dark:bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 text-sm font-medium"
                     >
                       Review
                     </button>
                   )}
                   <button
                     onClick={() => deleteQuiz(quiz.id)}
-                    className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
+                    className="px-4 py-2 border border-red-600 dark:border-red-400 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-sm font-medium"
                   >
                     Delete
                   </button>
@@ -434,23 +434,23 @@ function QuizTaking({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{quiz.title}</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{quiz.title}</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Question {currentQuestionIndex + 1} of {quiz.questions.length}
             </p>
           </div>
           <div className="flex items-center gap-4">
             {timeRemaining !== null && (
-              <div className={`text-2xl font-bold ${timeRemaining < 60 ? 'text-red-600' : 'text-gray-900'}`}>
+              <div className={`text-2xl font-bold ${timeRemaining < 60 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                 ⏱️ {formatTime(timeRemaining)}
               </div>
             )}
             <button
               onClick={onCancel}
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
             >
               Cancel
             </button>
@@ -458,9 +458,9 @@ function QuizTaking({
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all"
+            className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all"
             style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
           />
         </div>
@@ -472,10 +472,10 @@ function QuizTaking({
               key={i}
               className={`h-2 flex-1 rounded ${
                 i === currentQuestionIndex
-                  ? 'bg-blue-600'
+                  ? 'bg-blue-600 dark:bg-blue-500'
                   : answer !== undefined
-                  ? 'bg-green-400'
-                  : 'bg-gray-200'
+                  ? 'bg-green-400 dark:bg-green-500'
+                  : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
           ))}
@@ -483,8 +483,8 @@ function QuizTaking({
       </div>
 
       {/* Question */}
-      <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 mb-6">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           {currentQuestion.question}
         </h3>
 
@@ -498,16 +498,16 @@ function QuizTaking({
 
             if (showResult) {
               if (isCorrectAnswer) {
-                buttonClass += 'border-green-500 bg-green-50 ';
+                buttonClass += 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30 ';
               } else if (isSelected && !isCorrectAnswer) {
-                buttonClass += 'border-red-500 bg-red-50 ';
+                buttonClass += 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-900/30 ';
               } else {
-                buttonClass += 'border-gray-200 bg-gray-50 ';
+                buttonClass += 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 ';
               }
             } else {
               buttonClass += isSelected
-                ? 'border-blue-600 bg-blue-50 shadow-md '
-                : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50 ';
+                ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 shadow-md '
+                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700 ';
             }
 
             return (
@@ -528,7 +528,7 @@ function QuizTaking({
                     {showResult && isSelected && !isCorrectAnswer && <span className="text-white text-sm">✗</span>}
                     {!showResult && isSelected && <span className="w-3 h-3 bg-white rounded-full"></span>}
                   </div>
-                  <span className={`flex-1 ${showResult && isCorrectAnswer ? 'font-semibold text-green-900' : ''}`}>
+                  <span className={`flex-1 text-gray-900 dark:text-white ${showResult && isCorrectAnswer ? 'font-semibold text-green-900 dark:text-green-100' : ''}`}>
                     {option}
                   </span>
                 </div>
@@ -540,13 +540,13 @@ function QuizTaking({
         {/* Instant Feedback */}
         {showFeedback && hasAnswered && (
           <div className={`mt-6 p-4 rounded-lg border ${
-            isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+            isCorrect ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800'
           }`}>
-            <p className={`font-semibold mb-2 ${isCorrect ? 'text-green-800' : 'text-red-800'}`}>
+            <p className={`font-semibold mb-2 ${isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
               {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
             </p>
             {currentQuestion.explanation && (
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 {currentQuestion.explanation}
               </p>
             )}
@@ -559,12 +559,12 @@ function QuizTaking({
         <button
           onClick={handlePrevious}
           disabled={currentQuestionIndex === 0}
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800"
         >
           ← Previous
         </button>
 
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           {answers.filter(a => a !== undefined).length} / {quiz.questions.length} answered
         </div>
 
@@ -572,7 +572,7 @@ function QuizTaking({
           <button
             onClick={handleFinishQuiz}
             disabled={!allAnswered}
-            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
+            className="px-8 py-3 bg-green-600 dark:bg-green-500 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 font-medium disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed shadow-lg"
           >
             {allAnswered ? 'Finish Quiz ✓' : 'Answer all questions'}
           </button>
@@ -580,7 +580,7 @@ function QuizTaking({
           <button
             onClick={handleNext}
             disabled={!hasAnswered && quiz.settings.showInstantFeedback}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 font-medium disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             Next →
           </button>
@@ -594,23 +594,23 @@ function QuizTaking({
 function QuizReview({ quiz, onClose }: { quiz: Quiz; onClose: () => void }) {
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">{quiz.title} - Review</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{quiz.title} - Review</h2>
           <button
             onClick={onClose}
-            className="text-gray-600 hover:text-gray-900 font-medium"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
           >
             Close
           </button>
         </div>
 
-        <div className={`p-4 rounded-lg mb-4 ${quiz.score! >= 70 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-          <p className={`text-lg font-semibold ${quiz.score! >= 70 ? 'text-green-800' : 'text-red-800'}`}>
+        <div className={`p-4 rounded-lg mb-4 ${quiz.score! >= 70 ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'}`}>
+          <p className={`text-lg font-semibold ${quiz.score! >= 70 ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
             Score: {quiz.score}% ({quiz.questions.filter(q => q.userAnswer === q.correctAnswer).length}/{quiz.questions.length} correct)
           </p>
           {quiz.timeTaken && (
-            <p className="text-sm text-gray-700 mt-1">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
               Time Taken: {Math.floor(quiz.timeTaken / 60)}:{String(quiz.timeTaken % 60).padStart(2, '0')}
             </p>
           )}
@@ -622,13 +622,13 @@ function QuizReview({ quiz, onClose }: { quiz: Quiz; onClose: () => void }) {
           const isCorrect = question.userAnswer === question.correctAnswer;
 
           return (
-            <div key={question.id} className="bg-white rounded-lg border border-gray-200 p-6">
+            <div key={question.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-start justify-between mb-4">
-                <h3 className="font-semibold text-gray-900 flex-1">
+                <h3 className="font-semibold text-gray-900 dark:text-white flex-1">
                   {qIndex + 1}. {question.question}
                 </h3>
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  isCorrect ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                 }`}>
                   {isCorrect ? '✓ Correct' : '✗ Incorrect'}
                 </span>
@@ -642,29 +642,29 @@ function QuizReview({ quiz, onClose }: { quiz: Quiz; onClose: () => void }) {
                   let className = 'w-full text-left p-4 border-2 rounded-lg ';
 
                   if (isCorrectAnswer) {
-                    className += 'border-green-500 bg-green-50 ';
+                    className += 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30 ';
                   } else if (isSelected && !isCorrectAnswer) {
-                    className += 'border-red-500 bg-red-50 ';
+                    className += 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-900/30 ';
                   } else {
-                    className += 'border-gray-200 bg-gray-50 ';
+                    className += 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 ';
                   }
 
                   return (
                     <div key={oIndex} className={className}>
                       <div className="flex items-center gap-3">
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                          isCorrectAnswer ? 'border-green-600 bg-green-600' :
-                          isSelected && !isCorrectAnswer ? 'border-red-600 bg-red-600' :
-                          'border-gray-400'
+                          isCorrectAnswer ? 'border-green-600 dark:border-green-400 bg-green-600 dark:bg-green-500' :
+                          isSelected && !isCorrectAnswer ? 'border-red-600 dark:border-red-400 bg-red-600 dark:bg-red-500' :
+                          'border-gray-400 dark:border-gray-500'
                         }`}>
                           {isCorrectAnswer && <span className="text-white text-sm">✓</span>}
                           {isSelected && !isCorrectAnswer && <span className="text-white text-sm">✗</span>}
                         </div>
-                        <span className={isCorrectAnswer ? 'font-semibold text-green-900' : ''}>
+                        <span className={`text-gray-900 dark:text-white ${isCorrectAnswer ? 'font-semibold text-green-900 dark:text-green-100' : ''}`}>
                           {option}
                         </span>
                         {isSelected && !isCorrectAnswer && (
-                          <span className="ml-auto text-sm text-red-600 font-medium">Your answer</span>
+                          <span className="ml-auto text-sm text-red-600 dark:text-red-400 font-medium">Your answer</span>
                         )}
                       </div>
                     </div>
@@ -673,8 +673,8 @@ function QuizReview({ quiz, onClose }: { quiz: Quiz; onClose: () => void }) {
               </div>
 
               {question.explanation && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-900">
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm text-blue-900 dark:text-blue-300">
                     <span className="font-semibold">Explanation:</span> {question.explanation}
                   </p>
                 </div>
