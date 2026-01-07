@@ -456,7 +456,7 @@ function TimetableEntryModal({
               </label>
               <select
                 value={formData.dayOfWeek}
-                onChange={(e) => setFormData({ ...formData, dayOfWeek: Number(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, dayOfWeek: Number(e.target.value) as 0 | 1 | 2 | 3 | 4 | 5 | 6 })}
                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 required
               >

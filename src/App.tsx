@@ -8,7 +8,6 @@ import { TimetableView } from './components/TimetableView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { OnboardingFlow, shouldShowOnboarding } from './components/OnboardingFlow';
 import { AuthPage } from './components/AuthPage';
-import { useSyncUser } from './hooks/useSyncUser';
 import { ViewMode } from './types';
 
 function AppContent() {
@@ -16,9 +15,6 @@ function AppContent() {
   const { subjects, assignments, loading } = useApp();
   const [currentView, setCurrentView] = useState<ViewMode>('study-hub');
   const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // Sync Clerk user to Sanity on first login
-  useSyncUser();
 
   // Check onboarding status when user loads
   // Only show onboarding if user has never completed/skipped it

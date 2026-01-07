@@ -7,10 +7,13 @@ import {
   useQuizzes,
   useChatMessages,
   useTimetableEntries,
-} from '../hooks/useSanityData';
-import { sanityClient } from '../lib/sanity';
+} from '../hooks/useFirestoreData';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface AppContextType {
+  loading: boolean;
+
   // Subjects
   subjects: Subject[];
   addSubject: (subject: Omit<Subject, 'id'>) => Promise<void>;
@@ -73,28 +76,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const relatedMessages = chatMessagesHook.data.filter(m => m.subjectId === id);
     const relatedTimetable = timetableEntriesHook.data.filter(e => e.subjectId === id);
 
-    // IMPORTANT: Delete related documents FIRST (they reference the subject)
-    // Then delete the subject itself (to avoid Sanity reference errors)
+    // Delete related documents first, then the subject
+    // With Firebase, we can delete in any order (no reference integrity issues)
     await Promise.all([
-      ...relatedAssignments.map(a => sanityClient.delete(a.id)),
-      ...relatedNotes.map(n => sanityClient.delete(n.id)),
-      ...relatedQuizzes.map(q => sanityClient.delete(q.id)),
-      ...relatedMessages.map(m => sanityClient.delete(m.id)),
-      ...relatedTimetable.map(e => sanityClient.delete(e.id)),
+      ...relatedAssignments.map(a => deleteDoc(doc(db, 'assignments', a.id))),
+      ...relatedNotes.map(n => deleteDoc(doc(db, 'notes', n.id))),
+      ...relatedQuizzes.map(q => deleteDoc(doc(db, 'quizzes', q.id))),
+      ...relatedMessages.map(m => deleteDoc(doc(db, 'chatMessages', m.id))),
+      ...relatedTimetable.map(e => deleteDoc(doc(db, 'timetableEntries', e.id))),
     ]);
 
-    // Now delete the subject (no more references to it)
+    // Delete the subject
     await subjectsHook.deleteDocument(id);
-
-    // Refresh all data
-    await Promise.all([
-      subjectsHook.refresh(),
-      assignmentsHook.refresh(),
-      notesHook.refresh(),
-      quizzesHook.refresh(),
-      chatMessagesHook.refresh(),
-      timetableEntriesHook.refresh(),
-    ]);
   }, [subjectsHook, assignmentsHook, notesHook, quizzesHook, chatMessagesHook, timetableEntriesHook]);
 
   // Assignment functions
@@ -121,7 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await Promise.all(
       quizzesWithNote.map(quiz =>
         quizzesHook.updateDocument(quiz.id, {
-          noteIds: quiz.noteIds.filter(nId => nId !== id),
+          noteIds: quiz.noteIds.filter((nId: string) => nId !== id),
         })
       )
     );
@@ -160,8 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const clearSubjectChat = useCallback(async (subjectId: string) => {
     const messages = chatMessagesHook.data.filter(m => m.subjectId === subjectId);
-    await Promise.all(messages.map(m => sanityClient.delete(m.id)));
-    await chatMessagesHook.refresh();
+    await Promise.all(messages.map(m => deleteDoc(doc(db, 'chatMessages', m.id))));
   }, [chatMessagesHook]);
 
   // Timetable functions
@@ -183,8 +175,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }, [timetableEntriesHook.data]);
 
+  const loading =
+    subjectsHook.loading ||
+    assignmentsHook.loading ||
+    notesHook.loading ||
+    quizzesHook.loading ||
+    chatMessagesHook.loading ||
+    timetableEntriesHook.loading;
+
   const contextValue = useMemo(
     () => ({
+      loading,
       subjects: subjectsHook.data,
       addSubject,
       deleteSubject,
@@ -212,6 +213,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getTimetableByDay,
     }),
     [
+      loading,
       subjectsHook.data,
       addSubject,
       deleteSubject,
