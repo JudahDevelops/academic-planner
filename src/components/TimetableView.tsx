@@ -348,7 +348,7 @@ function TimetableEntryModal({
     { value: 0, label: 'Sunday' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.subjectId) {
@@ -385,9 +385,9 @@ function TimetableEntryModal({
     };
 
     if (entry) {
-      updateTimetableEntry(entry.id, timetableData);
+      await updateTimetableEntry(entry.id, timetableData);
     } else {
-      addTimetableEntry(timetableData);
+      await addTimetableEntry(timetableData);
     }
 
     onClose();

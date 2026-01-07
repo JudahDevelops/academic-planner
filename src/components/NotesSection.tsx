@@ -63,7 +63,7 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
         }
 
         // Add note to storage
-        addNote({
+        await addNote({
           subjectId,
           title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
           fileName: file.name,

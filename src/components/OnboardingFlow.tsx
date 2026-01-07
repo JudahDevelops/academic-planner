@@ -44,14 +44,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setStep(2);
   };
 
-  const handleCreateAssignment = (e: React.FormEvent) => {
+  const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignmentTitle.trim() || !assignmentDueDate || subjects.length === 0) return;
 
     // Use the first subject (the one we just created)
     const firstSubject = subjects[0];
 
-    addAssignment({
+    await addAssignment({
       title: assignmentTitle,
       subjectId: firstSubject.id,
       dueDate: assignmentDueDate,

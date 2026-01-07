@@ -87,11 +87,15 @@ function useFirestoreCollection<T>(collectionName: string): FirestoreHook<T> {
       if (!user?.id) throw new Error('User not authenticated');
 
       const collectionRef = collection(db, collectionName);
-      const dataToAdd = {
+      const dataToAdd: any = {
         ...docData,
         userId: user.id,
-        createdAt: serverTimestamp(),
       };
+
+      // Only add createdAt if it doesn't already exist in the data
+      if (!dataToAdd.createdAt) {
+        dataToAdd.createdAt = serverTimestamp();
+      }
 
       const docRef = await addDoc(collectionRef, dataToAdd);
       return docRef.id;

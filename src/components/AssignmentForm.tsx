@@ -20,12 +20,12 @@ export function AssignmentForm({ onClose, editingAssignment }: AssignmentFormPro
     estimatedHours: editingAssignment?.estimatedHours || undefined,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingAssignment) {
-      updateAssignment(editingAssignment.id, formData);
+      await updateAssignment(editingAssignment.id, formData);
     } else {
-      addAssignment(formData);
+      await addAssignment(formData);
     }
     onClose();
   };
