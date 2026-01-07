@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TimetableEntry } from '../types';
 import { CalendarIcon, StudyIcon } from './icons';
+import { ConfirmDialog } from './ConfirmDialog';
 
 export function TimetableView() {
   const { subjects, timetableEntries, deleteTimetableEntry } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
   const days = [
     { id: 1, name: 'Monday', short: 'Mon' },
@@ -71,17 +74,24 @@ export function TimetableView() {
     setShowAddModal(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this timetable entry?')) {
-      setDeletingId(id);
-      try {
-        await deleteTimetableEntry(id);
-      } catch (err) {
-        console.error('Error deleting timetable entry:', err);
-        alert(err instanceof Error ? err.message : 'Failed to delete timetable entry');
-      } finally {
-        setDeletingId(null);
-      }
+  const handleDeleteClick = (id: string) => {
+    setEntryToDelete(id);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!entryToDelete) return;
+
+    setDeletingId(entryToDelete);
+    try {
+      await deleteTimetableEntry(entryToDelete);
+      setShowConfirm(false);
+      setEntryToDelete(null);
+    } catch (err) {
+      console.error('Error deleting timetable entry:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete timetable entry');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -267,17 +277,11 @@ export function TimetableView() {
                           )}
                         </div>
                         <button
-                          onClick={() => handleDelete(entry.id)}
+                          onClick={() => handleDeleteClick(entry.id)}
                           disabled={deletingId === entry.id}
-                          className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {deletingId === entry.id && (
-                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                          )}
-                          {deletingId === entry.id ? 'Deleting...' : 'Delete'}
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -296,6 +300,18 @@ export function TimetableView() {
           onClose={handleCloseModal}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="Delete Timetable Entry?"
+        message="Are you sure you want to delete this class from your timetable? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setShowConfirm(false);
+          setEntryToDelete(null);
+        }}
+        isLoading={deletingId !== null}
+      />
     </div>
   );
 }
@@ -310,6 +326,7 @@ function TimetableEntryModal({
 }) {
   const { subjects, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry } = useApp();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
     subjectId: entry?.subjectId || subjects[0]?.id || '',
     dayOfWeek: entry?.dayOfWeek ?? 1,
@@ -360,18 +377,23 @@ function TimetableEntryModal({
     onClose();
   };
 
-  const handleDelete = async () => {
-    if (entry && window.confirm('Delete this class from your timetable?')) {
-      setIsDeleting(true);
-      try {
-        await deleteTimetableEntry(entry.id);
-        onClose();
-      } catch (err) {
-        console.error('Error deleting timetable entry:', err);
-        alert(err instanceof Error ? err.message : 'Failed to delete timetable entry');
-      } finally {
-        setIsDeleting(false);
-      }
+  const handleDeleteClick = () => {
+    setShowConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!entry) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteTimetableEntry(entry.id);
+      setShowConfirm(false);
+      onClose();
+    } catch (err) {
+      console.error('Error deleting timetable entry:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete timetable entry');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -492,17 +514,11 @@ function TimetableEntryModal({
                 <>
                   <button
                     type="button"
-                    onClick={handleDelete}
+                    onClick={handleDeleteClick}
                     disabled={isDeleting}
-                    className="px-6 py-3 border border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-3 border border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isDeleting && (
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    )}
-                    {isDeleting ? 'Deleting...' : 'Delete'}
+                    Delete
                   </button>
                   <button
                     type="button"
@@ -539,6 +555,15 @@ function TimetableEntryModal({
           </form>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="Delete Class?"
+        message="Are you sure you want to delete this class from your timetable? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowConfirm(false)}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
