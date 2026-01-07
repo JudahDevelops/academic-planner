@@ -63,7 +63,7 @@ export function TimetableView() {
     const endMinutes = (endHour - 7) * 60 + endMin;
     const duration = endMinutes - startMinutes;
 
-    const top = (startMinutes / 60) * 120; // 120px per hour (increased from 80px)
+    const top = (startMinutes / 60) * 120; // 120px per hour
     const height = (duration / 60) * 120;
 
     return { top, height };
@@ -168,7 +168,8 @@ export function TimetableView() {
                 {timeSlots.map((time, index) => (
                   <div
                     key={time}
-                    className="h-30 px-1 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                    className="px-1 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                    style={{ height: '120px' }}
                   >
                     {formatTime(time)}
                   </div>
@@ -182,7 +183,8 @@ export function TimetableView() {
                   {timeSlots.map((time) => (
                     <div
                       key={time}
-                      className="h-30 border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors"
+                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors"
+                      style={{ height: '120px' }}
                     />
                   ))}
 
