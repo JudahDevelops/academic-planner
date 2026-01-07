@@ -7,6 +7,7 @@ export function TimetableView() {
   const { subjects, timetableEntries, deleteTimetableEntry } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const days = [
     { id: 1, name: 'Monday', short: 'Mon' },
@@ -70,9 +71,17 @@ export function TimetableView() {
     setShowAddModal(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this timetable entry?')) {
-      deleteTimetableEntry(id);
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Delete this timetable entry?')) {
+      setDeletingId(id);
+      try {
+        await deleteTimetableEntry(id);
+      } catch (err) {
+        console.error('Error deleting timetable entry:', err);
+        alert(err instanceof Error ? err.message : 'Failed to delete timetable entry');
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
@@ -133,10 +142,10 @@ export function TimetableView() {
           <div className="inline-block min-w-full">
             {/* Header Row */}
             <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-              <div className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Time</div>
+              <div className="p-2 sm:p-4 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">Time</div>
               {days.map((day) => (
-                <div key={day.id} className="p-4 text-center border-l border-gray-200 dark:border-gray-700">
-                  <div className="font-semibold text-gray-900 dark:text-white">{day.short}</div>
+                <div key={day.id} className="p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700">
+                  <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{day.short}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{day.name}</div>
                 </div>
               ))}
@@ -149,7 +158,7 @@ export function TimetableView() {
                 {timeSlots.map((time, index) => (
                   <div
                     key={time}
-                    className="h-30 px-3 py-3 text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                    className="h-30 px-1 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
                   >
                     {formatTime(time)}
                   </div>
@@ -176,7 +185,7 @@ export function TimetableView() {
                       return (
                         <div
                           key={entry.id}
-                          className="absolute left-2 right-2 rounded-lg shadow-md overflow-hidden pointer-events-auto cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all border border-white border-opacity-20"
+                          className="absolute left-0 right-0 sm:left-2 sm:right-2 rounded-none sm:rounded-lg shadow-md overflow-hidden pointer-events-auto cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all border border-white border-opacity-20"
                           style={{
                             top: `${top}px`,
                             height: `${Math.max(height, 50)}px`,
@@ -184,7 +193,7 @@ export function TimetableView() {
                           }}
                           onClick={() => handleEdit(entry)}
                         >
-                          <div className="p-3 h-full flex flex-col text-white">
+                          <div className="p-2 sm:p-3 h-full flex flex-col text-white">
                             <div className="font-semibold text-sm leading-tight mb-1">
                               {getSubjectName(entry.subjectId)}
                             </div>
@@ -259,9 +268,16 @@ export function TimetableView() {
                         </div>
                         <button
                           onClick={() => handleDelete(entry.id)}
-                          className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm"
+                          disabled={deletingId === entry.id}
+                          className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
-                          Delete
+                          {deletingId === entry.id && (
+                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          )}
+                          {deletingId === entry.id ? 'Deleting...' : 'Delete'}
                         </button>
                       </div>
                     </div>
@@ -293,6 +309,7 @@ function TimetableEntryModal({
   onClose: () => void;
 }) {
   const { subjects, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry } = useApp();
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     subjectId: entry?.subjectId || subjects[0]?.id || '',
     dayOfWeek: entry?.dayOfWeek ?? 1,
@@ -343,10 +360,18 @@ function TimetableEntryModal({
     onClose();
   };
 
-  const handleDelete = () => {
-    if (entry && confirm('Delete this class from your timetable?')) {
-      deleteTimetableEntry(entry.id);
-      onClose();
+  const handleDelete = async () => {
+    if (entry && window.confirm('Delete this class from your timetable?')) {
+      setIsDeleting(true);
+      try {
+        await deleteTimetableEntry(entry.id);
+        onClose();
+      } catch (err) {
+        console.error('Error deleting timetable entry:', err);
+        alert(err instanceof Error ? err.message : 'Failed to delete timetable entry');
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -468,9 +493,16 @@ function TimetableEntryModal({
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="px-6 py-3 border border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 font-medium"
+                    disabled={isDeleting}
+                    className="px-6 py-3 border border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    Delete
+                    {isDeleting && (
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {isDeleting ? 'Deleting...' : 'Delete'}
                   </button>
                   <button
                     type="button"

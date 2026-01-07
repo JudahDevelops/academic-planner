@@ -109,9 +109,9 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-16rem)]">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700 p-4">
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white">AI Study Assistant</h3>
@@ -160,7 +160,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 bg-white dark:bg-gray-800 border-l border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 bg-white dark:bg-gray-800 overflow-y-auto p-4 space-y-4">
         {chatHistory.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-600 dark:text-gray-400 mb-4">Start a conversation!</p>
@@ -225,7 +225,7 @@ export function ChatSection({ subjectId }: ChatSectionProps) {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg border border-t-0 border-gray-200 dark:border-gray-700 p-4">
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
         {error && (
           <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300 text-sm">
             {error}

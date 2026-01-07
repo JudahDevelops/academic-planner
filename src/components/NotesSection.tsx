@@ -10,10 +10,26 @@ interface NotesSectionProps {
 export function NotesSection({ subjectId }: NotesSectionProps) {
   const { getSubjectNotes, addNote, deleteNote } = useApp();
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const notes = getSubjectNotes(subjectId);
+
+  const handleDeleteNote = async (id: string, title: string) => {
+    if (window.confirm(`Delete "${title}"? This cannot be undone.`)) {
+      setDeletingId(id);
+      setUploadError(null);
+      try {
+        await deleteNote(id);
+      } catch (err) {
+        console.error('Error deleting note:', err);
+        setUploadError(err instanceof Error ? err.message : 'Failed to delete note');
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -177,10 +193,17 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
                     </div>
                   </div>
                   <button
-                    onClick={() => deleteNote(note.id)}
-                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium ml-2 flex-shrink-0"
+                    onClick={() => handleDeleteNote(note.id, note.title)}
+                    disabled={deletingId === note.id}
+                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium ml-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
-                    Delete
+                    {deletingId === note.id && (
+                      <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {deletingId === note.id ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
 

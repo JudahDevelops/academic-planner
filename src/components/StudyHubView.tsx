@@ -36,6 +36,59 @@ export function StudyHubView() {
       return null;
     }
 
+    // For chat view, use full-page layout like ChatGPT
+    if (expandedSubject.tab === 'chat') {
+      return (
+        <div className="h-screen flex flex-col bg-white dark:bg-gray-800">
+          {/* Minimal Header */}
+          <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCloseExpanded}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Back to subjects"
+              >
+                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: subject.color }}
+                />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{subject.name}</h2>
+              </div>
+            </div>
+          </div>
+
+          {/* Full-page Chat */}
+          <div className="flex-1 overflow-hidden">
+            {subjectNotes.length > 0 ? (
+              <ChatSection subjectId={expandedSubject.subjectId} />
+            ) : (
+              <div className="h-full flex items-center justify-center p-4">
+                <div className="text-center max-w-md">
+                  <div className="flex justify-center mb-4">
+                    <AssignmentsIcon size={48} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Notes Uploaded Yet</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">Upload notes first to chat with the AI study assistant</p>
+                  <button
+                    onClick={() => setExpandedSubject({ ...expandedSubject, tab: 'notes' })}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Go to Notes
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Normal layout for notes and quizzes
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         {/* Header */}
@@ -61,7 +114,6 @@ export function StudyHubView() {
                   <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     {expandedSubject.tab === 'notes' && <><FolderIcon size={16} /> Notes & Documents</>}
                     {expandedSubject.tab === 'quizzes' && <><TargetIcon size={16} /> AI Quizzes</>}
-                    {expandedSubject.tab === 'chat' && <><ChatIcon size={16} /> Study Assistant</>}
                   </p>
                 </div>
               </div>
@@ -82,25 +134,6 @@ export function StudyHubView() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Notes Uploaded Yet</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">Upload notes first to generate AI quizzes</p>
-                <button
-                  onClick={() => setExpandedSubject({ ...expandedSubject, tab: 'notes' })}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Go to Notes
-                </button>
-              </div>
-            )
-          )}
-          {expandedSubject.tab === 'chat' && (
-            subjectNotes.length > 0 ? (
-              <ChatSection subjectId={expandedSubject.subjectId} />
-            ) : (
-              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                <div className="flex justify-center mb-4">
-                  <AssignmentsIcon size={48} />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Notes Uploaded Yet</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">Upload notes first to chat with the AI study assistant</p>
                 <button
                   onClick={() => setExpandedSubject({ ...expandedSubject, tab: 'notes' })}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
