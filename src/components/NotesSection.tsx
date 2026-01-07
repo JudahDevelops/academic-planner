@@ -11,6 +11,9 @@ interface NotesSectionProps {
 export function NotesSection({ subjectId }: NotesSectionProps) {
   const { getSubjectNotes, addNote, deleteNote } = useApp();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [currentFileName, setCurrentFileName] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -47,22 +50,35 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
 
     setUploading(true);
     setUploadError(null);
+    setUploadProgress(0);
 
     try {
-      for (const file of Array.from(files)) {
+      const fileArray = Array.from(files);
+
+      for (let i = 0; i < fileArray.length; i++) {
+        const file = fileArray[i];
+        setCurrentFileName(file.name);
+
         // Validate file size (5MB max)
         if (!validateFileSize(file, 5)) {
           throw new Error(`File "${file.name}" exceeds 5MB limit`);
         }
 
-        // Extract text from file
-        const result = await extractText(file);
+        // Extract text from file with progress tracking
+        const result = await extractText(file, (progress, status) => {
+          // Calculate overall progress accounting for multiple files
+          const fileProgress = (i / fileArray.length) * 100;
+          const currentFileProgress = (progress / fileArray.length);
+          setUploadProgress(Math.floor(fileProgress + currentFileProgress));
+          setUploadStatus(status);
+        });
 
         if (!result.success) {
           throw new Error(result.error || `Failed to process ${file.name}`);
         }
 
         // Add note to storage
+        setUploadStatus('Saving to database...');
         await addNote({
           subjectId,
           title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
@@ -73,13 +89,21 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
           fileSize: file.size,
         });
       }
+
+      setUploadProgress(100);
+      setUploadStatus('Complete!');
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
-      setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setTimeout(() => {
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadStatus('');
+        setCurrentFileName('');
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }, 500);
     }
   };
 
@@ -138,14 +162,26 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
           }`}
         >
           {uploading ? (
-            <div>
+            <div className="space-y-4">
               <div className="flex justify-center mb-2">
-                <svg className="animate-spin h-12 w-12 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg className="w-12 h-12 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <p className="text-gray-600 dark:text-gray-400">Processing files...</p>
+
+              <div>
+                <p className="text-gray-900 dark:text-white font-medium mb-2">{currentFileName}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{uploadStatus}</p>
+
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-blue-500 dark:bg-blue-400 h-full rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{uploadProgress}%</p>
+              </div>
             </div>
           ) : (
             <div>

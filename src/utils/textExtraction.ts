@@ -12,18 +12,30 @@ export interface ExtractionResult {
   error?: string;
 }
 
+export type ProgressCallback = (progress: number, status: string) => void;
+
 /**
  * Extract text from PDF file
  */
-export async function extractTextFromPDF(file: File): Promise<ExtractionResult> {
+export async function extractTextFromPDF(
+  file: File,
+  onProgress?: ProgressCallback
+): Promise<ExtractionResult> {
   try {
+    onProgress?.(10, 'Loading PDF...');
     const arrayBuffer = await file.arrayBuffer();
+
+    onProgress?.(20, 'Parsing PDF structure...');
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
     let fullText = '';
+    const totalPages = pdf.numPages;
 
     // Extract text from all pages
-    for (let i = 1; i <= pdf.numPages; i++) {
+    for (let i = 1; i <= totalPages; i++) {
+      const progress = 20 + Math.floor((i / totalPages) * 70);
+      onProgress?.(progress, `Extracting page ${i}/${totalPages}...`);
+
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
       const pageText = textContent.items
@@ -38,6 +50,7 @@ export async function extractTextFromPDF(file: File): Promise<ExtractionResult> 
       }
     }
 
+    onProgress?.(95, 'Finalizing...');
     return {
       success: true,
       text: fullText.trim(),
@@ -53,11 +66,18 @@ export async function extractTextFromPDF(file: File): Promise<ExtractionResult> 
 /**
  * Extract text from DOCX file
  */
-export async function extractTextFromDOCX(file: File): Promise<ExtractionResult> {
+export async function extractTextFromDOCX(
+  file: File,
+  onProgress?: ProgressCallback
+): Promise<ExtractionResult> {
   try {
+    onProgress?.(10, 'Loading DOCX file...');
     const arrayBuffer = await file.arrayBuffer();
+
+    onProgress?.(30, 'Parsing document structure...');
     const result = await mammoth.extractRawText({ arrayBuffer });
 
+    onProgress?.(70, 'Extracting text content...');
     let text = result.value;
 
     // Truncate if too long
@@ -65,6 +85,7 @@ export async function extractTextFromDOCX(file: File): Promise<ExtractionResult>
       text = text.substring(0, MAX_TEXT_LENGTH);
     }
 
+    onProgress?.(95, 'Finalizing...');
     return {
       success: true,
       text: text.trim(),
@@ -80,15 +101,21 @@ export async function extractTextFromDOCX(file: File): Promise<ExtractionResult>
 /**
  * Extract text from plain text file
  */
-export async function extractTextFromPlainText(file: File): Promise<ExtractionResult> {
+export async function extractTextFromPlainText(
+  file: File,
+  onProgress?: ProgressCallback
+): Promise<ExtractionResult> {
   try {
+    onProgress?.(30, 'Reading text file...');
     let text = await file.text();
 
+    onProgress?.(70, 'Processing content...');
     // Truncate if too long
     if (text.length > MAX_TEXT_LENGTH) {
       text = text.substring(0, MAX_TEXT_LENGTH);
     }
 
+    onProgress?.(95, 'Finalizing...');
     return {
       success: true,
       text: text.trim(),
@@ -104,11 +131,16 @@ export async function extractTextFromPlainText(file: File): Promise<ExtractionRe
 /**
  * Extract text from image (placeholder - requires OCR or Vision API)
  */
-export async function extractTextFromImage(file: File): Promise<ExtractionResult> {
+export async function extractTextFromImage(
+  file: File,
+  onProgress?: ProgressCallback
+): Promise<ExtractionResult> {
   // For now, store the image data URL and use DeepSeek Vision API later
   return new Promise((resolve) => {
+    onProgress?.(30, 'Loading image...');
     const reader = new FileReader();
     reader.onload = () => {
+      onProgress?.(95, 'Finalizing...');
       resolve({
         success: true,
         text: `[Image: ${file.name}]\n(Image text extraction requires Vision API - will be processed during quiz generation)`,
@@ -127,20 +159,23 @@ export async function extractTextFromImage(file: File): Promise<ExtractionResult
 /**
  * Main function to extract text from any supported file type
  */
-export async function extractText(file: File): Promise<ExtractionResult> {
+export async function extractText(
+  file: File,
+  onProgress?: ProgressCallback
+): Promise<ExtractionResult> {
   const fileType = file.type.toLowerCase();
   const fileName = file.name.toLowerCase();
 
   // Determine file type and extract accordingly
   if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-    return extractTextFromPDF(file);
+    return extractTextFromPDF(file, onProgress);
   }
 
   if (
     fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     fileName.endsWith('.docx')
   ) {
-    return extractTextFromDOCX(file);
+    return extractTextFromDOCX(file, onProgress);
   }
 
   if (
@@ -148,11 +183,11 @@ export async function extractText(file: File): Promise<ExtractionResult> {
     fileName.endsWith('.txt') ||
     fileName.endsWith('.md')
   ) {
-    return extractTextFromPlainText(file);
+    return extractTextFromPlainText(file, onProgress);
   }
 
   if (fileType.startsWith('image/')) {
-    return extractTextFromImage(file);
+    return extractTextFromImage(file, onProgress);
   }
 
   return {
