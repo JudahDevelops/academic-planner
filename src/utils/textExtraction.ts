@@ -31,10 +31,14 @@ export async function extractTextFromPDF(
     let fullText = '';
     const totalPages = pdf.numPages;
 
-    // Extract text from all pages
-    for (let i = 1; i <= totalPages; i++) {
-      const progress = 20 + Math.floor((i / totalPages) * 70);
-      onProgress?.(progress, `Extracting page ${i}/${totalPages}...`);
+    // Smart page extraction: limit to first 30 pages for performance
+    // Most important content is in early pages, and we have a 100KB text limit anyway
+    const pagesToExtract = Math.min(totalPages, 30);
+
+    // Extract text from pages
+    for (let i = 1; i <= pagesToExtract; i++) {
+      const progress = 20 + Math.floor((i / pagesToExtract) * 70);
+      onProgress?.(progress, `Extracting page ${i}/${pagesToExtract}...`);
 
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
@@ -43,11 +47,16 @@ export async function extractTextFromPDF(
         .join(' ');
       fullText += pageText + '\n\n';
 
-      // Stop if we exceed the limit
+      // Early termination if we have enough content
       if (fullText.length > MAX_TEXT_LENGTH) {
         fullText = fullText.substring(0, MAX_TEXT_LENGTH);
         break;
       }
+    }
+
+    // Add note if document was truncated
+    if (totalPages > pagesToExtract && fullText.length < MAX_TEXT_LENGTH) {
+      fullText += `\n\n[Note: Document has ${totalPages} pages. Extracted first ${pagesToExtract} pages for performance.]`;
     }
 
     onProgress?.(95, 'Finalizing...');
