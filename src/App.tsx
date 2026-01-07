@@ -21,18 +21,16 @@ function AppContent() {
   useSyncUser();
 
   // Check onboarding status when user loads
-  // Don't show onboarding if:
-  // 1. User has already completed it (localStorage check)
-  // 2. User already has data (existing subjects or assignments)
+  // Only show onboarding if user has never completed/skipped it
+  // Once dismissed, never show again - even if they delete all subjects
   useEffect(() => {
     if (user?.id && !loading) {
       const hasCompletedOnboarding = !shouldShowOnboarding(user.id);
-      const hasExistingData = subjects.length > 0 || assignments.length > 0;
 
-      // Only show onboarding for truly new users
-      setShowOnboarding(!hasCompletedOnboarding && !hasExistingData);
+      // Only show onboarding for truly new users who haven't seen it before
+      setShowOnboarding(!hasCompletedOnboarding);
     }
-  }, [user?.id, subjects.length, assignments.length, loading]);
+  }, [user?.id, loading]);
 
   // Listen for custom navigation events
   useEffect(() => {
