@@ -4,7 +4,9 @@ import mammoth from 'mammoth';
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-const MAX_TEXT_LENGTH = 100000; // 100KB limit per file
+const MAX_TEXT_LENGTH = 500000; // 500KB limit per file (increased for full documents)
+const INITIAL_PAGES = 10; // Quick initial extraction for fast feedback
+const BATCH_SIZE = 5; // Process remaining pages in batches
 
 export interface ExtractionResult {
   success: boolean;
@@ -31,14 +33,12 @@ export async function extractTextFromPDF(
     let fullText = '';
     const totalPages = pdf.numPages;
 
-    // Smart page extraction: limit to first 30 pages for performance
-    // Most important content is in early pages, and we have a 100KB text limit anyway
-    const pagesToExtract = Math.min(totalPages, 30);
+    // Phase 1: Quick initial extraction (first 10 pages for fast feedback)
+    const initialPages = Math.min(totalPages, INITIAL_PAGES);
 
-    // Extract text from pages
-    for (let i = 1; i <= pagesToExtract; i++) {
-      const progress = 20 + Math.floor((i / pagesToExtract) * 70);
-      onProgress?.(progress, `Extracting page ${i}/${pagesToExtract}...`);
+    for (let i = 1; i <= initialPages; i++) {
+      const progress = 20 + Math.floor((i / totalPages) * 40);
+      onProgress?.(progress, `Loading page ${i}/${totalPages}...`);
 
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
@@ -47,16 +47,39 @@ export async function extractTextFromPDF(
         .join(' ');
       fullText += pageText + '\n\n';
 
-      // Early termination if we have enough content
       if (fullText.length > MAX_TEXT_LENGTH) {
         fullText = fullText.substring(0, MAX_TEXT_LENGTH);
-        break;
+        onProgress?.(95, 'Content limit reached');
+        return { success: true, text: fullText.trim() };
       }
     }
 
-    // Add note if document was truncated
-    if (totalPages > pagesToExtract && fullText.length < MAX_TEXT_LENGTH) {
-      fullText += `\n\n[Note: Document has ${totalPages} pages. Extracted first ${pagesToExtract} pages for performance.]`;
+    // Phase 2: Process remaining pages in batches (better performance)
+    if (totalPages > initialPages) {
+      for (let i = initialPages + 1; i <= totalPages; i += BATCH_SIZE) {
+        const batchEnd = Math.min(i + BATCH_SIZE - 1, totalPages);
+        const progress = 20 + Math.floor((i / totalPages) * 70);
+        onProgress?.(progress, `Processing pages ${i}-${batchEnd}/${totalPages}...`);
+
+        // Process batch
+        for (let pageNum = i; pageNum <= batchEnd; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ');
+          fullText += pageText + '\n\n';
+
+          if (fullText.length > MAX_TEXT_LENGTH) {
+            fullText = fullText.substring(0, MAX_TEXT_LENGTH);
+            onProgress?.(95, 'Content limit reached');
+            return { success: true, text: fullText.trim() };
+          }
+        }
+
+        // Small delay between batches to keep UI responsive
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
     }
 
     onProgress?.(95, 'Finalizing...');
@@ -84,6 +107,10 @@ export async function extractTextFromDOCX(
     const arrayBuffer = await file.arrayBuffer();
 
     onProgress?.(30, 'Parsing document structure...');
+
+    // Add small delay to keep UI responsive
+    await new Promise(resolve => setTimeout(resolve, 10));
+
     const result = await mammoth.extractRawText({ arrayBuffer });
 
     onProgress?.(70, 'Extracting text content...');
@@ -92,6 +119,7 @@ export async function extractTextFromDOCX(
     // Truncate if too long
     if (text.length > MAX_TEXT_LENGTH) {
       text = text.substring(0, MAX_TEXT_LENGTH);
+      onProgress?.(90, 'Content limit reached');
     }
 
     onProgress?.(95, 'Finalizing...');
