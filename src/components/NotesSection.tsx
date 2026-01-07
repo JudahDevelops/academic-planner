@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { extractText, validateFileSize, getFileType } from '../utils/textExtraction';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { useUser } from '@clerk/clerk-react';
 import { FolderIcon, AssignmentsIcon } from './icons';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -9,7 +12,8 @@ interface NotesSectionProps {
 }
 
 export function NotesSection({ subjectId }: NotesSectionProps) {
-  const { getSubjectNotes, addNote, deleteNote } = useApp();
+  const { user } = useUser();
+  const { getSubjectNotes, addNote, deleteNote, updateNote } = useApp();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -48,6 +52,11 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    if (!user?.id) {
+      setUploadError('You must be signed in to upload files');
+      return;
+    }
+
     setUploading(true);
     setUploadError(null);
     setUploadProgress(0);
@@ -64,33 +73,71 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
           throw new Error(`File "${file.name}" exceeds 5MB limit`);
         }
 
-        // Extract text from file with progress tracking
-        const result = await extractText(file, (progress, status) => {
-          // Calculate overall progress accounting for multiple files
-          const fileProgress = (i / fileArray.length) * 100;
-          const currentFileProgress = (progress / fileArray.length);
-          setUploadProgress(Math.floor(fileProgress + currentFileProgress));
-          setUploadStatus(status);
-        });
+        // Step 1: Upload file to Firebase Storage (instant feedback!)
+        setUploadStatus('Uploading file...');
+        const timestamp = Date.now();
+        const storageRef = ref(storage, `notes/${user.id}/${subjectId}/${timestamp}_${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
 
-        if (!result.success) {
-          throw new Error(result.error || `Failed to process ${file.name}`);
-        }
+        // Track upload progress
+        await new Promise<string>((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            }
+          );
+        }).then(async (fileUrl) => {
+          // Step 2: Save note immediately with "processing" status
+          setUploadStatus('Saving note...');
+          const noteId = await addNote({
+            subjectId,
+            title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+            fileName: file.name,
+            fileType: getFileType(file),
+            content: 'Processing document... This may take a moment.',
+            uploadDate: new Date().toISOString(),
+            fileSize: file.size,
+            fileUrl,
+            processingStatus: 'processing',
+          });
 
-        // Add note to storage
-        setUploadStatus('Saving to database...');
-        await addNote({
-          subjectId,
-          title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
-          fileName: file.name,
-          fileType: getFileType(file),
-          content: result.text || '',
-          uploadDate: new Date().toISOString(),
-          fileSize: file.size,
+          // Step 3: Parse in background (user doesn't wait!)
+          setUploadProgress(100);
+          setUploadStatus('Uploaded! Processing in background...');
+
+          // Background parsing (non-blocking)
+          extractText(file).then(async (result) => {
+            if (result.success && noteId) {
+              await updateNote(noteId, {
+                content: result.text || 'No text content found.',
+                processingStatus: 'completed',
+              });
+            } else if (noteId) {
+              await updateNote(noteId, {
+                content: 'Failed to extract text from document.',
+                processingStatus: 'error',
+                processingError: result.error,
+              });
+            }
+          }).catch(async (error) => {
+            if (noteId) {
+              await updateNote(noteId, {
+                content: 'Failed to extract text from document.',
+                processingStatus: 'error',
+                processingError: error.message,
+              });
+            }
+          });
         });
       }
 
-      setUploadProgress(100);
       setUploadStatus('Complete!');
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'Upload failed');
@@ -232,9 +279,20 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="flex-shrink-0">{getFileIcon(note.fileType)}</div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-gray-900 dark:text-white truncate" title={note.title}>
-                        {note.title}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-gray-900 dark:text-white truncate" title={note.title}>
+                          {note.title}
+                        </h4>
+                        {note.processingStatus === 'processing' && (
+                          <span className="flex-shrink-0 inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{note.fileName}</p>
                     </div>
                   </div>

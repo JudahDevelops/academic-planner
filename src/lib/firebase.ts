@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBIhbjvdqa-rGq2qh7osTkAAtHyNMo0V7o",
@@ -15,6 +16,9 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore
 export const db = getFirestore(app);
+
+// Initialize Storage
+export const storage = getStorage(app);
 
 // Uncomment this for local development with Firebase emulator
 // if (import.meta.env.DEV) {

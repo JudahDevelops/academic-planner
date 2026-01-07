@@ -30,6 +30,9 @@ export interface Note {
   content: string; // extracted text content
   uploadDate: string;
   fileSize: number; // in bytes
+  fileUrl?: string; // Firebase Storage URL
+  processingStatus?: 'uploading' | 'processing' | 'completed' | 'error';
+  processingError?: string;
 }
 
 // Multiple choice question

@@ -27,7 +27,8 @@ interface AppContextType {
 
   // Notes
   notes: Note[];
-  addNote: (note: Omit<Note, 'id'>) => Promise<void>;
+  addNote: (note: Omit<Note, 'id'>) => Promise<string>;
+  updateNote: (id: string, note: Partial<Note>) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
   getSubjectNotes: (subjectId: string) => Note[];
 
@@ -105,7 +106,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Note functions
   const addNote = useCallback(async (note: Omit<Note, 'id'>) => {
-    await notesHook.addDocument(note);
+    return await notesHook.addDocument(note);
+  }, [notesHook]);
+
+  const updateNote = useCallback(async (id: string, updates: Partial<Note>) => {
+    await notesHook.updateDocument(id, updates);
   }, [notesHook]);
 
   const deleteNote = useCallback(async (id: string) => {
@@ -195,6 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteAssignment,
       notes: notesHook.data,
       addNote,
+      updateNote,
       deleteNote,
       getSubjectNotes,
       quizzes: quizzesHook.data,
@@ -223,6 +229,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteAssignment,
       notesHook.data,
       addNote,
+      updateNote,
       deleteNote,
       getSubjectNotes,
       quizzesHook.data,
