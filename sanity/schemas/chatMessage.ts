@@ -12,13 +12,6 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'sessionId',
-      title: 'Chat Session',
-      type: 'reference',
-      to: [{ type: 'chatSession' }],
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: 'subjectId',
       title: 'Subject',
       type: 'reference',

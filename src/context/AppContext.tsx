@@ -1,11 +1,10 @@
 import { createContext, useContext, ReactNode, useMemo, useCallback } from 'react';
-import { Assignment, Subject, Note, Quiz, ChatSession, ChatMessage, TimetableEntry } from '../types';
+import { Assignment, Subject, Note, Quiz, ChatMessage, TimetableEntry } from '../types';
 import {
   useSubjects,
   useAssignments,
   useNotes,
   useQuizzes,
-  useChatSessions,
   useChatMessages,
   useTimetableEntries,
 } from '../hooks/useSanityData';
@@ -36,18 +35,11 @@ interface AppContextType {
   deleteQuiz: (id: string) => Promise<void>;
   getSubjectQuizzes: (subjectId: string) => Quiz[];
 
-  // Chat Sessions
-  chatSessions: ChatSession[];
-  addChatSession: (session: Omit<ChatSession, 'id'>) => Promise<ChatSession | undefined>;
-  updateChatSession: (id: string, session: Partial<ChatSession>) => Promise<void>;
-  deleteChatSession: (id: string) => Promise<void>;
-  getSubjectSessions: (subjectId: string) => ChatSession[];
-
   // Chat Messages
   chatMessages: ChatMessage[];
   addChatMessage: (message: Omit<ChatMessage, 'id'>) => Promise<void>;
-  getSessionMessages: (sessionId: string) => ChatMessage[];
-  clearSessionChat: (sessionId: string) => Promise<void>;
+  getSubjectMessages: (subjectId: string) => ChatMessage[];
+  clearSubjectChat: (subjectId: string) => Promise<void>;
 
   // Timetable
   timetableEntries: TimetableEntry[];
@@ -65,7 +57,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const assignmentsHook = useAssignments();
   const notesHook = useNotes();
   const quizzesHook = useQuizzes();
-  const chatSessionsHook = useChatSessions();
   const chatMessagesHook = useChatMessages();
   const timetableEntriesHook = useTimetableEntries();
 
@@ -154,49 +145,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return quizzesHook.data.filter(q => q.subjectId === subjectId);
   }, [quizzesHook.data]);
 
-  // Chat session functions
-  const addChatSession = useCallback(async (session: Omit<ChatSession, 'id'>) => {
-    return await chatSessionsHook.addDocument(session);
-  }, [chatSessionsHook]);
-
-  const updateChatSession = useCallback(async (id: string, updates: Partial<ChatSession>) => {
-    await chatSessionsHook.updateDocument(id, updates);
-  }, [chatSessionsHook]);
-
-  const deleteChatSession = useCallback(async (id: string) => {
-    // Cascade delete all messages in this session
-    const sessionMessages = chatMessagesHook.data.filter(m => m.sessionId === id);
-    await Promise.all([
-      ...sessionMessages.map(m => sanityClient.delete(m.id)),
-      sanityClient.delete(id),
-    ]);
-    await chatSessionsHook.refresh();
-    await chatMessagesHook.refresh();
-  }, [chatSessionsHook, chatMessagesHook]);
-
-  const getSubjectSessions = useCallback((subjectId: string) => {
-    return chatSessionsHook.data
-      .filter(s => s.subjectId === subjectId)
-      .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
-  }, [chatSessionsHook.data]);
-
   // Chat message functions
   const addChatMessage = useCallback(async (message: Omit<ChatMessage, 'id'>) => {
     await chatMessagesHook.addDocument(message);
-    // Update session's lastMessageAt
-    if (message.sessionId) {
-      await chatSessionsHook.updateDocument(message.sessionId, {
-        lastMessageAt: new Date().toISOString(),
-      });
-    }
-  }, [chatMessagesHook, chatSessionsHook]);
+  }, [chatMessagesHook]);
 
-  const getSessionMessages = useCallback((sessionId: string) => {
-    return chatMessagesHook.data.filter(m => m.sessionId === sessionId);
+  const getSubjectMessages = useCallback((subjectId: string) => {
+    return chatMessagesHook.data.filter(m => m.subjectId === subjectId);
   }, [chatMessagesHook.data]);
 
-  const clearSessionChat = useCallback(async (sessionId: string) => {
-    const messages = chatMessagesHook.data.filter(m => m.sessionId === sessionId);
+  const clearSubjectChat = useCallback(async (subjectId: string) => {
+    const messages = chatMessagesHook.data.filter(m => m.subjectId === subjectId);
     await Promise.all(messages.map(m => sanityClient.delete(m.id)));
     await chatMessagesHook.refresh();
   }, [chatMessagesHook]);
@@ -238,15 +197,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateQuiz,
       deleteQuiz,
       getSubjectQuizzes,
-      chatSessions: chatSessionsHook.data,
-      addChatSession,
-      updateChatSession,
-      deleteChatSession,
-      getSubjectSessions,
       chatMessages: chatMessagesHook.data,
       addChatMessage,
-      getSessionMessages,
-      clearSessionChat,
+      getSubjectMessages,
+      clearSubjectChat,
       timetableEntries: timetableEntriesHook.data,
       addTimetableEntry,
       updateTimetableEntry,
@@ -270,15 +224,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateQuiz,
       deleteQuiz,
       getSubjectQuizzes,
-      chatSessionsHook.data,
-      addChatSession,
-      updateChatSession,
-      deleteChatSession,
-      getSubjectSessions,
       chatMessagesHook.data,
       addChatMessage,
-      getSessionMessages,
-      clearSessionChat,
+      getSubjectMessages,
+      clearSubjectChat,
       timetableEntriesHook.data,
       addTimetableEntry,
       updateTimetableEntry,

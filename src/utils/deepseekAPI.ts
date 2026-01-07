@@ -179,40 +179,6 @@ Example format:
 }
 
 /**
- * Generate a short title for a chat session based on the first message
- */
-export async function generateChatTitle(userMessage: string): Promise<string> {
-  const systemPrompt = `Generate a very short, concise title (3-6 words max) for a chat conversation based on the user's first message.
-Return ONLY the title text, no quotes, no explanation, no punctuation at the end.
-The title should capture the main topic or question.
-
-Examples:
-User: "Can you explain photosynthesis?"
-Output: Photosynthesis Explanation
-
-User: "Help me study for my calculus exam on derivatives"
-Output: Calculus Derivatives Study
-
-User: "What are the key points in chapter 5?"
-Output: Chapter 5 Key Points`;
-
-  const messages: DeepSeekMessage[] = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: userMessage },
-  ];
-
-  try {
-    const title = await callDeepSeek(messages);
-    // Clean up the response (remove quotes, extra whitespace, trailing punctuation)
-    return title.trim().replace(/^["']|["']$/g, '').replace(/[.!?]+$/, '').substring(0, 50);
-  } catch (error) {
-    console.error('Title generation error:', error);
-    // Fallback to truncated message
-    return userMessage.length > 40 ? userMessage.substring(0, 40) + '...' : userMessage;
-  }
-}
-
-/**
  * Chat with AI about notes (NotebookLM style)
  */
 export async function chatWithNotes(
