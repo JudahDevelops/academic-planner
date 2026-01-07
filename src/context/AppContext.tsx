@@ -73,14 +73,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const relatedMessages = chatMessagesHook.data.filter(m => m.subjectId === id);
     const relatedTimetable = timetableEntriesHook.data.filter(e => e.subjectId === id);
 
+    // IMPORTANT: Delete related documents FIRST (they reference the subject)
+    // Then delete the subject itself (to avoid Sanity reference errors)
     await Promise.all([
       ...relatedAssignments.map(a => sanityClient.delete(a.id)),
       ...relatedNotes.map(n => sanityClient.delete(n.id)),
       ...relatedQuizzes.map(q => sanityClient.delete(q.id)),
       ...relatedMessages.map(m => sanityClient.delete(m.id)),
       ...relatedTimetable.map(e => sanityClient.delete(e.id)),
-      subjectsHook.deleteDocument(id),
     ]);
+
+    // Now delete the subject (no more references to it)
+    await subjectsHook.deleteDocument(id);
 
     // Refresh all data
     await Promise.all([
