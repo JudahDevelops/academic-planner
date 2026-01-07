@@ -85,9 +85,13 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
             'state_changed',
             (snapshot) => {
               const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(progress);
+              setUploadProgress(Math.floor(progress));
+              setUploadStatus(`Uploading... ${Math.floor(progress)}%`);
             },
-            (error) => reject(error),
+            (error) => {
+              console.error('Upload error:', error);
+              reject(new Error(`Upload failed: ${error.message}. Make sure Firebase Storage is enabled and rules are configured.`));
+            },
             async () => {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
               resolve(downloadURL);
