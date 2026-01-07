@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { Assignment } from '../types';
 
 interface AssignmentFormProps {
@@ -9,6 +10,7 @@ interface AssignmentFormProps {
 
 export function AssignmentForm({ onClose, editingAssignment }: AssignmentFormProps) {
   const { subjects, addAssignment, updateAssignment } = useApp();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     title: editingAssignment?.title || '',
     subjectId: editingAssignment?.subjectId || subjects[0]?.id || '',
@@ -22,12 +24,19 @@ export function AssignmentForm({ onClose, editingAssignment }: AssignmentFormPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingAssignment) {
-      await updateAssignment(editingAssignment.id, formData);
-    } else {
-      await addAssignment(formData);
+    try {
+      if (editingAssignment) {
+        await updateAssignment(editingAssignment.id, formData);
+        showToast('Assignment updated successfully', 'success');
+      } else {
+        await addAssignment(formData);
+        showToast('Assignment created successfully', 'success');
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error saving assignment:', error);
+      showToast(error instanceof Error ? error.message : 'Failed to save assignment', 'error');
     }
-    onClose();
   };
 
   return (

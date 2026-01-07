@@ -97,6 +97,13 @@ function useFirestoreCollection<T>(collectionName: string): FirestoreHook<T> {
         dataToAdd.createdAt = serverTimestamp();
       }
 
+      // Remove undefined fields (Firestore doesn't accept undefined)
+      Object.keys(dataToAdd).forEach((key) => {
+        if (dataToAdd[key] === undefined) {
+          delete dataToAdd[key];
+        }
+      });
+
       const docRef = await addDoc(collectionRef, dataToAdd);
       return docRef.id;
     },
@@ -108,10 +115,17 @@ function useFirestoreCollection<T>(collectionName: string): FirestoreHook<T> {
       if (!user?.id) throw new Error('User not authenticated');
 
       const docRef = doc(db, collectionName, id);
-      const dataToUpdate = {
+      const dataToUpdate: any = {
         ...docData,
         updatedAt: serverTimestamp(),
       };
+
+      // Remove undefined fields (Firestore doesn't accept undefined)
+      Object.keys(dataToUpdate).forEach((key) => {
+        if (dataToUpdate[key] === undefined) {
+          delete dataToUpdate[key];
+        }
+      });
 
       await updateDoc(docRef, dataToUpdate);
     },

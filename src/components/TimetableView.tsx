@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { TimetableEntry } from '../types';
 import { CalendarIcon, StudyIcon } from './icons';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -327,6 +328,7 @@ function TimetableEntryModal({
   onClose: () => void;
 }) {
   const { subjects, addTimetableEntry, updateTimetableEntry, deleteTimetableEntry } = useApp();
+  const { showToast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
@@ -352,7 +354,7 @@ function TimetableEntryModal({
     e.preventDefault();
 
     if (!formData.subjectId) {
-      alert('Please select a subject');
+      showToast('Please select a subject', 'error');
       return;
     }
 
@@ -361,17 +363,17 @@ function TimetableEntryModal({
     const endHour = parseInt(formData.endTime.split(':')[0]);
 
     if (startHour < 7 || startHour > 21) {
-      alert('Start time must be between 7:00 AM and 9:00 PM');
+      showToast('Start time must be between 7:00 AM and 9:00 PM', 'error');
       return;
     }
 
     if (endHour < 7 || endHour > 21) {
-      alert('End time must be between 7:00 AM and 9:00 PM');
+      showToast('End time must be between 7:00 AM and 9:00 PM', 'error');
       return;
     }
 
     if (formData.startTime >= formData.endTime) {
-      alert('End time must be after start time');
+      showToast('End time must be after start time', 'error');
       return;
     }
 
@@ -384,13 +386,19 @@ function TimetableEntryModal({
       notes: formData.notes || undefined,
     };
 
-    if (entry) {
-      await updateTimetableEntry(entry.id, timetableData);
-    } else {
-      await addTimetableEntry(timetableData);
+    try {
+      if (entry) {
+        await updateTimetableEntry(entry.id, timetableData);
+        showToast('Timetable entry updated successfully', 'success');
+      } else {
+        await addTimetableEntry(timetableData);
+        showToast('Timetable entry added successfully', 'success');
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error saving timetable entry:', error);
+      showToast(error instanceof Error ? error.message : 'Failed to save timetable entry', 'error');
     }
-
-    onClose();
   };
 
   const handleDeleteClick = () => {
