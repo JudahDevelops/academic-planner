@@ -53,49 +53,70 @@ export async function extractTextWithDeepSeek(
     }
 
     // Construct the API request for vision/OCR
+    console.log('📤 Sending request to DeepSeek API...', {
+      fileType,
+      base64Length: base64.length,
+      isImage,
+      isPDF
+    });
+
+    const requestBody = {
+      model: 'deepseek-chat',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert document text extraction assistant. Extract ALL text content from the provided document/image and return it in plain text format. Preserve formatting, structure, headings, lists, and paragraphs. Do not add any commentary, explanations, or markdown formatting - just return the extracted text exactly as it appears in the document.',
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Please extract all text from this document. Return only the extracted text with no additional formatting or commentary.',
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${fileType};base64,${base64}`,
+              },
+            },
+          ],
+        },
+      ],
+      temperature: 0.1, // Low temperature for accuracy
+      max_tokens: 16000, // Allow long documents
+    };
+
+    console.log('📤 Request body:', JSON.stringify(requestBody).substring(0, 500) + '...');
+
     const response = await fetch(DEEPSEEK_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert document text extraction assistant. Extract ALL text content from the provided document/image and return it in plain text format. Preserve formatting, structure, headings, lists, and paragraphs. Do not add any commentary, explanations, or markdown formatting - just return the extracted text exactly as it appears in the document.',
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Please extract all text from this document. Return only the extracted text with no additional formatting or commentary.',
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:${fileType};base64,${base64}`,
-                },
-              },
-            ],
-          },
-        ],
-        temperature: 0.1, // Low temperature for accuracy
-        max_tokens: 16000, // Allow long documents
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     onProgress?.(70, 'Processing response...');
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('DeepSeek API error:', error);
-      throw new Error(`API error: ${response.status} - ${error}`);
+      const errorText = await response.text();
+      console.error('❌ DeepSeek API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('📥 DeepSeek API response:', {
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      firstChoice: data.choices?.[0]
+    });
+
     const extractedText = data.choices[0]?.message?.content;
 
     if (!extractedText) {
