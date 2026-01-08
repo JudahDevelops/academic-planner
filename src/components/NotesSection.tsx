@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { extractTextWithDeepSeek } from '../utils/deepseekExtraction';
+import { extractTextOptimized } from '../utils/optimizedPDFParser';
 import { getFileType } from '../utils/textExtraction';
 import { uploadFile, deleteFile, validateFileSize } from '../lib/supabase';
 import { useUser } from '@clerk/clerk-react';
@@ -109,25 +109,31 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
 
         setUploadStatus('Processing in background...');
 
-        // Step 3: Extract text using DeepSeek API in background
-        console.log(`🔄 Starting DeepSeek text extraction for: ${file.name}`);
-        extractTextWithDeepSeek(file, (progress, status) => {
+        // Step 3: Extract text using optimized PDF parser in background
+        console.log(`🔄 Starting optimized text extraction for: ${file.name}`);
+        extractTextOptimized(file, (progress, status) => {
           console.log(`📊 Extraction progress: ${progress}% - ${status}`);
-        }).then(async (result) => {
-          console.log(`✅ DeepSeek extraction completed for: ${file.name}`, {
+        }, 'sample').then(async (result) => {
+          console.log(`✅ Extraction completed for: ${file.name}`, {
             success: result.success,
             textLength: result.text?.length || 0,
+            pageCount: result.pageCount,
+            isPreview: result.isPreview,
             error: result.error
           });
 
           if (result.success && noteId) {
+            const contentNote = result.isPreview
+              ? `📄 Sampled content from ${result.pageCount} pages (key sections extracted for faster processing)\n\n${result.text}`
+              : result.text || 'No text content found.';
+
             await updateNote(noteId, {
-              content: result.text || 'No text content found.',
+              content: contentNote,
               processingStatus: 'completed',
             });
             console.log(`💾 Note updated successfully: ${noteId}`);
           } else if (noteId) {
-            console.error(`❌ DeepSeek extraction failed for: ${file.name}`, result.error);
+            console.error(`❌ Extraction failed for: ${file.name}`, result.error);
             await updateNote(noteId, {
               content: 'Failed to extract text from document.',
               processingStatus: 'error',
@@ -135,7 +141,7 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
             });
           }
         }).catch(async (error) => {
-          console.error(`❌ DeepSeek extraction error for: ${file.name}`, error);
+          console.error(`❌ Extraction error for: ${file.name}`, error);
           if (noteId) {
             await updateNote(noteId, {
               content: 'Failed to extract text from document.',
