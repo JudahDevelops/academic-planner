@@ -88,28 +88,24 @@ export async function extractSmartSample(
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const totalPages = pdf.numPages;
 
-    // Determine which pages to parse
+    // Determine which pages to parse - VERY LIMITED sampling for smaller output
     const pagesToParse: number[] = [];
 
-    // Always parse first 3 pages
-    for (let i = 1; i <= Math.min(3, totalPages); i++) {
+    // Always parse first 2 pages only
+    for (let i = 1; i <= Math.min(2, totalPages); i++) {
       pagesToParse.push(i);
     }
 
-    // Sample middle pages (every 10th page)
-    if (totalPages > 10) {
-      for (let i = 10; i < totalPages - 3; i += 10) {
+    // Sample very few middle pages (every 30th page instead of every 10th)
+    if (totalPages > 30) {
+      for (let i = 30; i < totalPages - 2; i += 30) {
         pagesToParse.push(i);
       }
     }
 
-    // Always parse last 2 pages
-    if (totalPages > 3) {
-      for (let i = Math.max(4, totalPages - 1); i <= totalPages; i++) {
-        if (!pagesToParse.includes(i)) {
-          pagesToParse.push(i);
-        }
-      }
+    // Always parse last page only
+    if (totalPages > 2) {
+      pagesToParse.push(totalPages);
     }
 
     let sampledText = '';

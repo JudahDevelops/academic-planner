@@ -88,11 +88,11 @@ export async function generateQuiz(
 ): Promise<Question[]> {
   const combinedContent = noteContents.join('\n\n---\n\n');
 
-  // Limit content to 5,000 characters to avoid HTTP/2 protocol errors
-  // Very small limit needed because quiz responses are large JSON with all questions/options/explanations
-  const MAX_CONTENT_LENGTH = 5000;
+  // Limit content to 2,000 characters to avoid HTTP/2 protocol errors
+  // Very aggressive limit needed - even 5KB was causing errors
+  const MAX_CONTENT_LENGTH = 2000;
   const truncatedContent = combinedContent.length > MAX_CONTENT_LENGTH
-    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation. Using first 5,000 characters.]'
+    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation. Using first 2,000 characters.]'
     : combinedContent;
 
   const systemPrompt = `You are an expert quiz generator. Generate exactly ${questionCount} multiple-choice questions based on the provided study notes.
