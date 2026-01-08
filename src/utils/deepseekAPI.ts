@@ -88,6 +88,12 @@ export async function generateQuiz(
 ): Promise<Question[]> {
   const combinedContent = noteContents.join('\n\n---\n\n');
 
+  // Limit content to 20,000 characters to avoid HTTP/2 protocol errors
+  const MAX_CONTENT_LENGTH = 20000;
+  const truncatedContent = combinedContent.length > MAX_CONTENT_LENGTH
+    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation...]'
+    : combinedContent;
+
   const systemPrompt = `You are an expert quiz generator. Generate exactly ${questionCount} multiple-choice questions based on the provided study notes.
 
 CRITICAL REQUIREMENTS:
@@ -110,7 +116,9 @@ Example format:
   ]
 }`;
 
-  const userPrompt = `Generate ${questionCount} multiple-choice questions from these notes:\n\n${combinedContent}`;
+  const userPrompt = `Generate ${questionCount} multiple-choice questions from these notes:\n\n${truncatedContent}`;
+
+  console.log(`Quiz generation: Sending ${truncatedContent.length} characters to DeepSeek (${combinedContent.length > MAX_CONTENT_LENGTH ? 'truncated from ' + combinedContent.length : 'full content'})`);
 
   try {
     const response = await callDeepSeek([
@@ -188,10 +196,16 @@ export async function chatWithNotes(
 ): Promise<string> {
   const combinedContent = noteContents.join('\n\n---\n\n');
 
+  // Limit content to avoid HTTP/2 protocol errors with large documents
+  const MAX_CONTENT_LENGTH = 30000;
+  const truncatedContent = combinedContent.length > MAX_CONTENT_LENGTH
+    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated...]'
+    : combinedContent;
+
   const systemPrompt = `You are a helpful study assistant. You have access to the student's notes and can answer questions about them, create summaries, explain concepts, and help with studying.
 
 Available notes:
-${combinedContent}
+${truncatedContent}
 
 Instructions:
 - Answer questions based on the provided notes
