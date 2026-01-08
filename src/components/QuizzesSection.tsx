@@ -169,7 +169,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
               <input
                 type="range"
                 min="10"
-                max="50"
+                max="25"
                 step="5"
                 value={questionCount}
                 onChange={(e) => setQuestionCount(Number(e.target.value))}
@@ -177,8 +177,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
               />
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                 <span>10</span>
-                <span>30</span>
-                <span>50</span>
+                <span>25</span>
               </div>
             </div>
 
