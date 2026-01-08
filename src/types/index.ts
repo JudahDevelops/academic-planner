@@ -1,6 +1,7 @@
 // Subject (formerly Course) - Universal organizing unit
 export interface Subject {
   id: string;
+  userId: string; // Clerk user ID for security
   name: string;
   color: string;
 }
@@ -10,6 +11,7 @@ export type Course = Subject;
 
 export interface Assignment {
   id: string;
+  userId: string; // Clerk user ID for security
   title: string;
   subjectId: string; // renamed from courseId
   dueDate: string;
@@ -23,6 +25,7 @@ export interface Assignment {
 // Note/Document uploaded by user
 export interface Note {
   id: string;
+  userId: string; // Clerk user ID for security
   subjectId: string;
   title: string;
   fileName: string;
@@ -30,7 +33,7 @@ export interface Note {
   content: string; // extracted text content
   uploadDate: string;
   fileSize: number; // in bytes
-  fileUrl?: string; // Firebase Storage URL
+  fileUrl?: string; // Supabase Storage public URL
   processingStatus?: 'uploading' | 'processing' | 'completed' | 'error';
   processingError?: string;
 }
@@ -48,6 +51,7 @@ export interface Question {
 // Quiz generated from notes
 export interface Quiz {
   id: string;
+  userId: string; // Clerk user ID for security
   subjectId: string;
   noteIds: string[]; // which notes were used to generate
   title: string;
@@ -66,6 +70,7 @@ export interface Quiz {
 // Chat message for NotebookLM-style interface
 export interface ChatMessage {
   id: string;
+  userId: string; // Clerk user ID for security
   subjectId: string;
   role: 'user' | 'assistant';
   content: string;
@@ -75,6 +80,7 @@ export interface ChatMessage {
 // Timetable entry for class schedule
 export interface TimetableEntry {
   id: string;
+  userId: string; // Clerk user ID for security
   subjectId: string;
   dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   startTime: string; // HH:MM format (24-hour)

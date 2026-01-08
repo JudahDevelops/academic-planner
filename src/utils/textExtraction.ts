@@ -233,13 +233,6 @@ export async function extractText(
   };
 }
 
-/**
- * Validate file size
- */
-export function validateFileSize(file: File, maxSizeMB: number = 5): boolean {
-  const maxBytes = maxSizeMB * 1024 * 1024;
-  return file.size <= maxBytes;
-}
 
 /**
  * Get file type category

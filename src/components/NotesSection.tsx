@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { extractText, validateFileSize, getFileType } from '../utils/textExtraction';
-import { storage } from '../lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { extractText, getFileType } from '../utils/textExtraction';
+import { uploadFile, deleteFile, validateFileSize } from '../lib/supabase';
 import { useUser } from '@clerk/clerk-react';
 import { FolderIcon, AssignmentsIcon } from './icons';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -37,6 +36,15 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
     setDeletingId(noteToDelete.id);
     setUploadError(null);
     try {
+      // Find the note to get its fileUrl
+      const note = notes.find(n => n.id === noteToDelete.id);
+
+      // Delete file from Supabase Storage if it exists
+      if (note?.fileUrl) {
+        await deleteFile(note.fileUrl);
+      }
+
+      // Delete note from Firestore
       await deleteNote(noteToDelete.id);
       setShowConfirm(false);
       setNoteToDelete(null);
@@ -68,77 +76,60 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
         const file = fileArray[i];
         setCurrentFileName(file.name);
 
-        // Validate file size (5MB max)
-        if (!validateFileSize(file, 5)) {
-          throw new Error(`File "${file.name}" exceeds 5MB limit`);
+        // Validate file size (20MB max - Supabase limit)
+        if (!validateFileSize(file)) {
+          throw new Error(`File "${file.name}" exceeds 20MB limit`);
         }
 
-        // Step 1: Upload file to Firebase Storage (instant feedback!)
+        // Step 1: Upload file to Supabase Storage
         setUploadStatus('Uploading file...');
-        const timestamp = Date.now();
-        const storageRef = ref(storage, `notes/${user.id}/${subjectId}/${timestamp}_${file.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, file);
+        const uploadResult = await uploadFile(file, user.id, subjectId, (progress) => {
+          setUploadProgress(Math.floor(progress));
+          setUploadStatus(`Uploading... ${Math.floor(progress)}%`);
+        });
 
-        // Track upload progress
-        await new Promise<string>((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(Math.floor(progress));
-              setUploadStatus(`Uploading... ${Math.floor(progress)}%`);
-            },
-            (error) => {
-              console.error('Upload error:', error);
-              reject(new Error(`Upload failed: ${error.message}. Make sure Firebase Storage is enabled and rules are configured.`));
-            },
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            }
-          );
-        }).then(async (fileUrl) => {
-          // Step 2: Save note immediately with "processing" status
-          setUploadStatus('Saving note...');
-          const noteId = await addNote({
-            subjectId,
-            title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
-            fileName: file.name,
-            fileType: getFileType(file),
-            content: 'Processing document... This may take a moment.',
-            uploadDate: new Date().toISOString(),
-            fileSize: file.size,
-            fileUrl,
-            processingStatus: 'processing',
-          });
+        if (!uploadResult.success || !uploadResult.url) {
+          throw new Error(uploadResult.error || 'Upload failed');
+        }
 
-          // Step 3: Parse in background (user doesn't wait!)
-          setUploadProgress(100);
-          setUploadStatus('Uploaded! Processing in background...');
+        // Step 2: Save note immediately with "processing" status
+        setUploadStatus('Saving note...');
+        const noteId = await addNote({
+          subjectId,
+          title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+          fileName: file.name,
+          fileType: getFileType(file),
+          content: 'Processing document... This may take a moment.',
+          uploadDate: new Date().toISOString(),
+          fileSize: file.size,
+          fileUrl: uploadResult.url, // Supabase Storage URL
+          processingStatus: 'processing',
+        });
 
-          // Background parsing (non-blocking)
-          extractText(file).then(async (result) => {
-            if (result.success && noteId) {
-              await updateNote(noteId, {
-                content: result.text || 'No text content found.',
-                processingStatus: 'completed',
-              });
-            } else if (noteId) {
-              await updateNote(noteId, {
-                content: 'Failed to extract text from document.',
-                processingStatus: 'error',
-                processingError: result.error,
-              });
-            }
-          }).catch(async (error) => {
-            if (noteId) {
-              await updateNote(noteId, {
-                content: 'Failed to extract text from document.',
-                processingStatus: 'error',
-                processingError: error.message,
-              });
-            }
-          });
+        setUploadStatus('Processing in background...');
+
+        // Step 3: Parse in background (user doesn't wait!)
+        extractText(file).then(async (result) => {
+          if (result.success && noteId) {
+            await updateNote(noteId, {
+              content: result.text || 'No text content found.',
+              processingStatus: 'completed',
+            });
+          } else if (noteId) {
+            await updateNote(noteId, {
+              content: 'Failed to extract text from document.',
+              processingStatus: 'error',
+              processingError: result.error,
+            });
+          }
+        }).catch(async (error) => {
+          if (noteId) {
+            await updateNote(noteId, {
+              content: 'Failed to extract text from document.',
+              processingStatus: 'error',
+              processingError: error.message,
+            });
+          }
         });
       }
 
@@ -243,7 +234,7 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
               </div>
               <p className="text-gray-900 dark:text-white font-medium mb-1">Upload Notes & Documents</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                PDF, DOCX, TXT, MD, or Images (Max 5MB per file)
+                PDF, DOCX, TXT, MD, or Images (Max 20MB per file)
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500">
                 Click or drag files here
@@ -300,13 +291,25 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
                       <p className="text-xs text-gray-500 dark:text-gray-400">{note.fileName}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteClick(note.id, note.title)}
-                    disabled={deletingId === note.id}
-                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium ml-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                    {note.fileUrl && (
+                      <a
+                        href={note.fileUrl}
+                        download={note.fileName}
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
+                        title="Download file"
+                      >
+                        Download
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleDeleteClick(note.id, note.title)}
+                      disabled={deletingId === note.id}
+                      className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">

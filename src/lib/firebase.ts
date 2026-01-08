@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBIhbjvdqa-rGq2qh7osTkAAtHyNMo0V7o",
@@ -14,11 +14,30 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Initialize Firebase Auth
+export const auth = getAuth(app);
+
 // Initialize Firestore
 export const db = getFirestore(app);
 
-// Initialize Storage
-export const storage = getStorage(app);
+/**
+ * Sign in to Firebase using Clerk's custom token
+ */
+export async function signIntoFirebaseWithClerk(getToken: () => Promise<string | null>) {
+  try {
+    const token = await getToken({ template: 'integration_firebase' });
+    if (!token) {
+      throw new Error('No Firebase token from Clerk');
+    }
+
+    const userCredential = await signInWithCustomToken(auth, token);
+    console.log('✅ Signed into Firebase with Clerk:', userCredential.user.uid);
+    return userCredential.user;
+  } catch (error) {
+    console.error('❌ Firebase sign-in error:', error);
+    throw error;
+  }
+}
 
 // Uncomment this for local development with Firebase emulator
 // if (import.meta.env.DEV) {

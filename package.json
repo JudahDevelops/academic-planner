@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.59.2",
     "@clerk/clerk-sdk-node": "^4.13.23",
+    "@supabase/supabase-js": "^2.90.0",
     "date-fns": "^4.1.0",
     "firebase": "^12.7.0",
     "framer-motion": "^12.24.0",
