@@ -13,7 +13,7 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
   const { getSubjectNotes, getSubjectQuizzes, addQuiz, updateQuiz, deleteQuiz } = useApp();
   const [generatingQuiz, setGeneratingQuiz] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const [questionCount, setQuestionCount] = useState(10);
+  const [questionCount, setQuestionCount] = useState(5);
   const [timeLimit, setTimeLimit] = useState<number | undefined>(undefined);
   const [showInstantFeedback, setShowInstantFeedback] = useState(false);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
@@ -168,16 +168,17 @@ export function QuizzesSection({ subjectId }: QuizzesSectionProps) {
               </label>
               <input
                 type="range"
-                min="10"
-                max="25"
+                min="5"
+                max="15"
                 step="5"
                 value={questionCount}
                 onChange={(e) => setQuestionCount(Number(e.target.value))}
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span>5</span>
                 <span>10</span>
-                <span>25</span>
+                <span>15</span>
               </div>
             </div>
 

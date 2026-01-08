@@ -37,7 +37,7 @@ async function callDeepSeek(messages: DeepSeekMessage[], retries = 3): Promise<s
           model: 'deepseek-chat',
           messages,
           temperature: 0.7,
-          max_tokens: 2000, // Reduced from 4000 to avoid HTTP/2 protocol errors with large responses
+          max_tokens: 1500, // Further reduced to 1500 to fix persistent HTTP/2 errors
         }),
         signal: controller.signal,
       });
@@ -88,11 +88,11 @@ export async function generateQuiz(
 ): Promise<Question[]> {
   const combinedContent = noteContents.join('\n\n---\n\n');
 
-  // Limit content to 10,000 characters to avoid HTTP/2 protocol errors
-  // Smaller limit for quiz generation since the response can be very large
-  const MAX_CONTENT_LENGTH = 10000;
+  // Limit content to 5,000 characters to avoid HTTP/2 protocol errors
+  // Very small limit needed because quiz responses are large JSON with all questions/options/explanations
+  const MAX_CONTENT_LENGTH = 5000;
   const truncatedContent = combinedContent.length > MAX_CONTENT_LENGTH
-    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation. Using first 10,000 characters.]'
+    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation. Using first 5,000 characters.]'
     : combinedContent;
 
   const systemPrompt = `You are an expert quiz generator. Generate exactly ${questionCount} multiple-choice questions based on the provided study notes.
