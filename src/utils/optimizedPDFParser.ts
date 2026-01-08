@@ -1,7 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker - use local copy from assets
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdf.worker.min.mjs';
+// Configure PDF.js worker - use static file from public folder
+// This file is copied to public/ and served directly by Vercel
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 const MAX_TEXT_LENGTH = 500000; // 500KB limit
 const PREVIEW_PAGES = 5; // Number of pages for quick preview
