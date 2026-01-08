@@ -37,7 +37,7 @@ async function callDeepSeek(messages: DeepSeekMessage[], retries = 3): Promise<s
           model: 'deepseek-chat',
           messages,
           temperature: 0.7,
-          max_tokens: 4000,
+          max_tokens: 2000, // Reduced from 4000 to avoid HTTP/2 protocol errors with large responses
         }),
         signal: controller.signal,
       });
@@ -88,10 +88,11 @@ export async function generateQuiz(
 ): Promise<Question[]> {
   const combinedContent = noteContents.join('\n\n---\n\n');
 
-  // Limit content to 20,000 characters to avoid HTTP/2 protocol errors
-  const MAX_CONTENT_LENGTH = 20000;
+  // Limit content to 10,000 characters to avoid HTTP/2 protocol errors
+  // Smaller limit for quiz generation since the response can be very large
+  const MAX_CONTENT_LENGTH = 10000;
   const truncatedContent = combinedContent.length > MAX_CONTENT_LENGTH
-    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation...]'
+    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation. Using first 10,000 characters.]'
     : combinedContent;
 
   const systemPrompt = `You are an expert quiz generator. Generate exactly ${questionCount} multiple-choice questions based on the provided study notes.
@@ -102,7 +103,7 @@ CRITICAL REQUIREMENTS:
 3. Each question must have: question, options (array of 4 strings), correctAnswer (number 0-3), explanation
 4. Questions should test understanding, not just memorization
 5. Make options plausible but clearly distinguishable
-6. Include brief explanations for the correct answers
+6. Keep explanations BRIEF (1-2 sentences max) to minimize response size
 
 Example format:
 {
