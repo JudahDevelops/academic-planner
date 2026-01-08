@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { extractText, getFileType } from '../utils/textExtraction';
+import { extractTextWithDeepSeek } from '../utils/deepseekExtraction';
+import { getFileType } from '../utils/textExtraction';
 import { uploadFile, deleteFile, validateFileSize } from '../lib/supabase';
 import { useUser } from '@clerk/clerk-react';
 import { FolderIcon, AssignmentsIcon } from './icons';
@@ -108,14 +109,25 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
 
         setUploadStatus('Processing in background...');
 
-        // Step 3: Parse in background (user doesn't wait!)
-        extractText(file).then(async (result) => {
+        // Step 3: Extract text using DeepSeek API in background
+        console.log(`🔄 Starting DeepSeek text extraction for: ${file.name}`);
+        extractTextWithDeepSeek(file, (progress, status) => {
+          console.log(`📊 Extraction progress: ${progress}% - ${status}`);
+        }).then(async (result) => {
+          console.log(`✅ DeepSeek extraction completed for: ${file.name}`, {
+            success: result.success,
+            textLength: result.text?.length || 0,
+            error: result.error
+          });
+
           if (result.success && noteId) {
             await updateNote(noteId, {
               content: result.text || 'No text content found.',
               processingStatus: 'completed',
             });
+            console.log(`💾 Note updated successfully: ${noteId}`);
           } else if (noteId) {
+            console.error(`❌ DeepSeek extraction failed for: ${file.name}`, result.error);
             await updateNote(noteId, {
               content: 'Failed to extract text from document.',
               processingStatus: 'error',
@@ -123,6 +135,7 @@ export function NotesSection({ subjectId }: NotesSectionProps) {
             });
           }
         }).catch(async (error) => {
+          console.error(`❌ DeepSeek extraction error for: ${file.name}`, error);
           if (noteId) {
             await updateNote(noteId, {
               content: 'Failed to extract text from document.',
