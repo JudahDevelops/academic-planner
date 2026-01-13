@@ -49,14 +49,17 @@ export function TimetableView() {
   };
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
+    // Just return the hour number for 24-hour format display
+    const [hours] = time.split(':');
+    return parseInt(hours).toString();
   };
 
-  const calculatePosition = (startTime: string, endTime: string) => {
+  const formatTimeWithMinutes = (time: string) => {
+    // For entry times, show full 24-hour time
+    return time;
+  };
+
+  const calculatePosition = (startTime: string, endTime: string, hourHeight: number) => {
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
 
@@ -64,8 +67,8 @@ export function TimetableView() {
     const endMinutes = (endHour - 7) * 60 + endMin;
     const duration = endMinutes - startMinutes;
 
-    const top = (startMinutes / 60) * 120; // 120px per hour
-    const height = (duration / 60) * 120;
+    const top = (startMinutes / 60) * hourHeight;
+    const height = (duration / 60) * hourHeight;
 
     return { top, height };
   };
@@ -103,7 +106,7 @@ export function TimetableView() {
 
   if (subjects.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
         <div className="text-center py-16">
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12 border-2 border-dashed border-blue-300 dark:border-blue-700 max-w-2xl mx-auto">
             <div className="flex justify-center mb-6 animate-bounce">
@@ -132,7 +135,7 @@ export function TimetableView() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -169,70 +172,136 @@ export function TimetableView() {
                 {timeSlots.map((time, index) => (
                   <div
                     key={time}
-                    className="px-1 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                    style={{ height: '120px' }}
+                    className="px-1 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 h-[60px] sm:h-[80px]"
                   >
                     {formatTime(time)}
                   </div>
                 ))}
               </div>
 
-              {/* Day Columns */}
-              {days.map((day) => (
-                <div key={day.id} className="border-l border-gray-200 dark:border-gray-700 relative">
-                  {/* Time slot backgrounds */}
-                  {timeSlots.map((time) => (
-                    <div
-                      key={time}
-                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors"
-                      style={{ height: '120px' }}
-                    />
-                  ))}
+              {/* Day Columns - Mobile (60px) */}
+              <div className="sm:hidden contents">
+                {days.map((day) => {
+                  const hourHeight = 60; // Mobile height
 
-                  {/* Class entries (absolutely positioned) */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {getEntriesForDay(day.id).map((entry) => {
-                      const { top, height } = calculatePosition(entry.startTime, entry.endTime);
-                      const color = getSubjectColor(entry.subjectId);
-
-                      return (
+                  return (
+                    <div key={day.id} className="border-l border-gray-200 dark:border-gray-700 relative">
+                      {/* Time slot backgrounds */}
+                      {timeSlots.map((time) => (
                         <div
-                          key={entry.id}
-                          className="absolute left-0 right-0 sm:left-2 sm:right-2 rounded-none sm:rounded-lg shadow-md overflow-hidden pointer-events-auto cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all border border-white border-opacity-20"
-                          style={{
-                            top: `${top}px`,
-                            height: `${Math.max(height, 50)}px`,
-                            backgroundColor: color,
-                          }}
-                          onClick={() => handleEdit(entry)}
-                        >
-                          <div className="p-2 sm:p-3 h-full flex flex-col text-white">
-                            <div className="font-semibold text-sm leading-tight mb-1">
-                              {getSubjectName(entry.subjectId)}
-                            </div>
-                            <div className="text-xs opacity-95 font-medium">
-                              {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
-                            </div>
-                            {entry.location && height > 70 && (
-                              <div className="text-xs opacity-85 mt-1.5 truncate flex items-center gap-1">
-                                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                                {entry.location}
+                          key={time}
+                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors h-[60px]"
+                        />
+                      ))}
+
+                      {/* Class entries (absolutely positioned) */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {getEntriesForDay(day.id).map((entry) => {
+                          const { top, height } = calculatePosition(entry.startTime, entry.endTime, hourHeight);
+                          const color = getSubjectColor(entry.subjectId);
+
+                          return (
+                            <div
+                              key={entry.id}
+                              className="absolute left-0 right-0 rounded-none shadow-md overflow-hidden pointer-events-auto cursor-pointer hover:shadow-lg transition-all border border-white border-opacity-20"
+                              style={{
+                                top: `${top}px`,
+                                height: `${Math.max(height, 40)}px`,
+                                backgroundColor: color,
+                              }}
+                              onClick={() => handleEdit(entry)}
+                            >
+                              <div className="p-2 h-full flex flex-col text-white">
+                                <div className="font-semibold text-sm leading-tight mb-1">
+                                  {getSubjectName(entry.subjectId)}
+                                </div>
+                                <div className="text-xs opacity-95 font-medium">
+                                  {formatTimeWithMinutes(entry.startTime)} - {formatTimeWithMinutes(entry.endTime)}
+                                </div>
+                                {entry.location && height > 50 && (
+                                  <div className="text-xs opacity-85 mt-1.5 truncate flex items-center gap-1">
+                                    <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    {entry.location}
+                                  </div>
+                                )}
+                                {entry.notes && height > 70 && (
+                                  <div className="text-xs opacity-75 mt-1 truncate">
+                                    {entry.notes}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {entry.notes && height > 90 && (
-                              <div className="text-xs opacity-75 mt-1 truncate">
-                                {entry.notes}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Day Columns - Desktop (80px) */}
+              <div className="hidden sm:contents">
+                {days.map((day) => {
+                  const hourHeight = 80; // Desktop height
+
+                  return (
+                    <div key={day.id} className="border-l border-gray-200 dark:border-gray-700 relative">
+                      {/* Time slot backgrounds */}
+                      {timeSlots.map((time) => (
+                        <div
+                          key={time}
+                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors h-[80px]"
+                        />
+                      ))}
+
+                      {/* Class entries (absolutely positioned) */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {getEntriesForDay(day.id).map((entry) => {
+                          const { top, height } = calculatePosition(entry.startTime, entry.endTime, hourHeight);
+                          const color = getSubjectColor(entry.subjectId);
+
+                          return (
+                            <div
+                              key={entry.id}
+                              className="absolute left-2 right-2 rounded-lg shadow-md overflow-hidden pointer-events-auto cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all border border-white border-opacity-20"
+                              style={{
+                                top: `${top}px`,
+                                height: `${Math.max(height, 40)}px`,
+                                backgroundColor: color,
+                              }}
+                              onClick={() => handleEdit(entry)}
+                            >
+                              <div className="p-3 h-full flex flex-col text-white">
+                                <div className="font-semibold text-sm leading-tight mb-1">
+                                  {getSubjectName(entry.subjectId)}
+                                </div>
+                                <div className="text-xs opacity-95 font-medium">
+                                  {formatTimeWithMinutes(entry.startTime)} - {formatTimeWithMinutes(entry.endTime)}
+                                </div>
+                                {entry.location && height > 50 && (
+                                  <div className="text-xs opacity-85 mt-1.5 truncate flex items-center gap-1">
+                                    <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    {entry.location}
+                                  </div>
+                                )}
+                                {entry.notes && height > 70 && (
+                                  <div className="text-xs opacity-75 mt-1 truncate">
+                                    {entry.notes}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -263,7 +332,7 @@ export function TimetableView() {
                             {getSubjectName(entry.subjectId)}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
+                            {formatTimeWithMinutes(entry.startTime)} - {formatTimeWithMinutes(entry.endTime)}
                           </div>
                           {entry.location && (
                             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
