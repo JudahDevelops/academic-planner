@@ -28,8 +28,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
+      // Set HTML background color to prevent white flash on mobile refresh
+      root.style.backgroundColor = '#030712'; // gray-950
     } else {
       root.classList.remove('dark');
+      // Set HTML background color to prevent white flash on mobile refresh
+      root.style.backgroundColor = '#f9fafb'; // gray-50
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
