@@ -155,7 +155,7 @@ export function TimetableView() {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full">
             {/* Header Row */}
-            <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+            <div className="grid border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700" style={{ gridTemplateColumns: '3rem repeat(7, 1fr)' }}>
               <div className="p-2 sm:p-4"></div>
               {days.map((day) => (
                 <div key={day.id} className="p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700">
@@ -166,13 +166,13 @@ export function TimetableView() {
             </div>
 
             {/* Time Grid */}
-            <div className="grid grid-cols-8">
+            <div className="grid" style={{ gridTemplateColumns: '3rem repeat(7, 1fr)' }}>
               {/* Time Labels Column */}
               <div className="border-r border-gray-200 dark:border-gray-700">
                 {timeSlots.map((time, index) => (
                   <div
                     key={time}
-                    className="px-1 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 h-[60px] sm:h-[80px]"
+                    className="px-1 py-2 sm:py-3 text-xs text-center text-gray-600 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 h-[60px] sm:h-[80px] flex items-center justify-center"
                   >
                     {formatTime(time)}
                   </div>
