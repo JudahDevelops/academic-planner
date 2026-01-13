@@ -58,7 +58,7 @@ export interface Quiz {
   questions: Question[];
   createdAt: string;
   settings: {
-    questionCount: number; // 5-15 (limited to prevent HTTP/2 errors)
+    questionCount: number; // 5-30 (using plain text format for reliability)
     timeLimit?: number; // in minutes (optional timer)
     showInstantFeedback?: boolean; // show if answer is correct immediately
   };
