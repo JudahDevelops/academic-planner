@@ -211,23 +211,23 @@ export function TimetableView() {
                               }}
                               onClick={() => handleEdit(entry)}
                             >
-                              <div className="p-2 h-full flex flex-col text-white">
-                                <div className="font-semibold text-sm leading-tight mb-1">
+                              <div className="p-1 h-full flex flex-col text-white">
+                                <div className="font-semibold text-xs leading-tight mb-0.5">
                                   {getSubjectName(entry.subjectId)}
                                 </div>
-                                <div className="text-xs opacity-95 font-medium">
+                                <div className="text-[10px] opacity-95 font-medium">
                                   {formatTimeWithMinutes(entry.startTime)} - {formatTimeWithMinutes(entry.endTime)}
                                 </div>
                                 {entry.location && height > 50 && (
-                                  <div className="text-xs opacity-85 mt-1.5 truncate flex items-center gap-1">
-                                    <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <div className="text-[10px] opacity-85 mt-0.5 truncate flex items-center gap-0.5">
+                                    <svg className="w-2.5 h-2.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                                     </svg>
                                     {entry.location}
                                   </div>
                                 )}
                                 {entry.notes && height > 70 && (
-                                  <div className="text-xs opacity-75 mt-1 truncate">
+                                  <div className="text-[10px] opacity-75 mt-0.5 truncate">
                                     {entry.notes}
                                   </div>
                                 )}
