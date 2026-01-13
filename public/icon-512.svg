@@ -1,0 +1,37 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#2563eb" rx="102"/>
+
+  <defs>
+    <linearGradient id="iconGradient512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+  </defs>
+
+  <!-- Flowing book/pages design (scaled up more) -->
+  <path
+    d="M102 154 Q154 102, 256 128 T410 154 L410 358 Q358 384, 256 358 T102 358 Z"
+    fill="url(#iconGradient512)"
+    opacity="0.9"
+  />
+  <path
+    d="M128 179 Q179 144, 256 163 T384 179 L384 333 Q333 358, 256 333 T128 333 Z"
+    fill="url(#iconGradient512)"
+    opacity="0.7"
+  />
+  <path
+    d="M154 205 Q205 179, 256 195 T358 205 L358 307 Q307 323, 256 307 T154 307 Z"
+    fill="url(#iconGradient512)"
+    opacity="0.5"
+  />
+
+  <!-- Central flowing line -->
+  <path
+    d="M256 128 Q256 205, 256 256 T256 384"
+    stroke="white"
+    stroke-width="10"
+    stroke-linecap="round"
+    opacity="0.8"
+  />
+</svg>

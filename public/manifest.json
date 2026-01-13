@@ -1,0 +1,54 @@
+{
+  "name": "StudyFlow - AI Study Companion",
+  "short_name": "StudyFlow",
+  "description": "AI-powered academic planner with smart note-taking, quiz generation, and study assistance",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Study Hub",
+      "short_name": "Study Hub",
+      "description": "Access your notes and AI chat",
+      "url": "/?view=study-hub",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Assignments",
+      "short_name": "Assignments",
+      "description": "View and manage assignments",
+      "url": "/?view=assignments",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Timetable",
+      "short_name": "Timetable",
+      "description": "Check your class schedule",
+      "url": "/?view=timetable",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import { TimetableView } from './components/TimetableView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { OnboardingFlow, shouldShowOnboarding } from './components/OnboardingFlow';
 import { AuthPage } from './components/AuthPage';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { ViewMode } from './types';
 import { signIntoFirebaseWithClerk } from './lib/firebase';
 
@@ -95,6 +96,7 @@ function App() {
       <SignedIn>
         <AppProvider>
           <AppContent />
+          <PWAInstallPrompt />
         </AppProvider>
       </SignedIn>
     </>
