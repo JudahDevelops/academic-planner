@@ -155,7 +155,7 @@ export function TimetableView() {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full">
             {/* Header Row */}
-            <div className="grid border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700" style={{ gridTemplateColumns: '2rem repeat(7, 1fr)' }}>
+            <div className="grid border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 [grid-template-columns:2rem_repeat(7,1fr)] sm:[grid-template-columns:3.5rem_repeat(7,1fr)]">
               <div className="p-1 sm:p-4"></div>
               {days.map((day) => (
                 <div key={day.id} className="p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700">
@@ -166,7 +166,7 @@ export function TimetableView() {
             </div>
 
             {/* Time Grid */}
-            <div className="grid" style={{ gridTemplateColumns: '2rem repeat(7, 1fr)' }}>
+            <div className="grid [grid-template-columns:2rem_repeat(7,1fr)] sm:[grid-template-columns:3.5rem_repeat(7,1fr)]">
               {/* Time Labels Column */}
               <div className="border-r border-gray-200 dark:border-gray-700">
                 {timeSlots.map((time, index) => (
