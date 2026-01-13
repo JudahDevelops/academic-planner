@@ -211,7 +211,7 @@ export function TimetableView() {
                               }}
                               onClick={() => handleEdit(entry)}
                             >
-                              <div className="p-1 h-full flex flex-col text-white">
+                              <div className="pr-1 pt-1 pb-1 h-full flex flex-col text-white">
                                 <div className="font-semibold text-xs leading-tight mb-0.5">
                                   {getSubjectName(entry.subjectId)}
                                 </div>
