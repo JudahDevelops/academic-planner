@@ -37,7 +37,7 @@ async function callDeepSeek(messages: DeepSeekMessage[], retries = 3): Promise<s
           model: 'deepseek-chat',
           messages,
           temperature: 0.7,
-          max_tokens: 1500, // Further reduced to 1500 to fix persistent HTTP/2 errors
+          max_tokens: 3000, // Increased for plain text format (less compact than JSON)
         }),
         signal: controller.signal,
       });
@@ -88,38 +88,33 @@ export async function generateQuiz(
 ): Promise<Question[]> {
   const combinedContent = noteContents.join('\n\n---\n\n');
 
-  // Limit content to 2,000 characters to avoid HTTP/2 protocol errors
-  // Very aggressive limit needed - even 5KB was causing errors
-  const MAX_CONTENT_LENGTH = 2000;
+  // Limit content - using more generous limit now that we're using plain text format
+  const MAX_CONTENT_LENGTH = 10000;
   const truncatedContent = combinedContent.length > MAX_CONTENT_LENGTH
-    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation. Using first 2,000 characters.]'
+    ? combinedContent.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated for quiz generation.]'
     : combinedContent;
 
+  // TESTING: Try plain text format instead of JSON to see if that avoids HTTP/2 errors
   const systemPrompt = `You are an expert quiz generator. Generate exactly ${questionCount} multiple-choice questions based on the provided study notes.
 
-CRITICAL REQUIREMENTS:
-1. Return ONLY valid JSON - no markdown, no code blocks, no explanatory text
-2. Format: {"questions": [array of question objects]}
-3. Each question must have: question, options (array of 4 strings), correctAnswer (number 0-3), explanation
-4. Questions should test understanding, not just memorization
-5. Make options plausible but clearly distinguishable
-6. Keep explanations BRIEF (1-2 sentences max) to minimize response size
+Format each question using this PLAIN TEXT structure (no JSON):
 
-Example format:
-{
-  "questions": [
-    {
-      "question": "What is the time complexity of binary search?",
-      "options": ["O(n)", "O(log n)", "O(n²)", "O(1)"],
-      "correctAnswer": 1,
-      "explanation": "Binary search divides the search space in half each iteration, resulting in O(log n) time complexity."
-    }
-  ]
-}`;
+Q1: [Your question here]
+A) [First option]
+B) [Second option]
+C) [Third option]
+D) [Fourth option]
+ANSWER: [Letter A/B/C/D]
+EXPLANATION: [Brief 1-sentence explanation]
+
+Q2: [Next question]
+...and so on.
+
+Keep explanations to ONE sentence each. Make options clear and distinct.`;
 
   const userPrompt = `Generate ${questionCount} multiple-choice questions from these notes:\n\n${truncatedContent}`;
 
-  console.log(`Quiz generation: Sending ${truncatedContent.length} characters to DeepSeek (${combinedContent.length > MAX_CONTENT_LENGTH ? 'truncated from ' + combinedContent.length : 'full content'})`);
+  console.log(`Quiz generation (TEXT FORMAT): Sending ${truncatedContent.length} characters to DeepSeek (${combinedContent.length > MAX_CONTENT_LENGTH ? 'truncated from ' + combinedContent.length : 'full content'})`);
 
   try {
     const response = await callDeepSeek([
@@ -127,62 +122,66 @@ Example format:
       { role: 'user', content: userPrompt },
     ]);
 
-    console.log('Raw DeepSeek response:', response.substring(0, 200) + '...');
+    console.log('Raw DeepSeek response:', response.substring(0, 300) + '...');
 
-    // Extract JSON from response (handle markdown code blocks and extra text)
-    let jsonString = response.trim();
+    // Parse plain text format
+    const questions: Question[] = [];
+    const questionBlocks = response.split(/Q\d+:/i).filter(block => block.trim());
 
-    // Remove markdown code blocks if present
-    if (jsonString.includes('```')) {
-      const match = jsonString.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-      if (match) {
-        jsonString = match[1];
-      } else {
-        // Try to find JSON between any code blocks
-        jsonString = jsonString.replace(/```(?:json)?/g, '').replace(/```/g, '');
+    console.log(`Found ${questionBlocks.length} question blocks`);
+
+    for (let i = 0; i < questionBlocks.length; i++) {
+      const block = questionBlocks[i].trim();
+      console.log(`Parsing block ${i + 1}:`, block.substring(0, 100));
+
+      // Extract question (everything before first option)
+      const questionMatch = block.match(/^(.+?)(?=[A-D]\))/s);
+      if (!questionMatch) {
+        console.warn(`Failed to parse question in block ${i + 1}`);
+        continue;
       }
-    }
+      const question = questionMatch[1].trim();
 
-    // Find JSON object in the string (in case there's extra text)
-    const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      jsonString = jsonMatch[0];
-    }
-
-    console.log('Extracted JSON:', jsonString.substring(0, 200) + '...');
-
-    // Parse the response
-    const parsed = JSON.parse(jsonString);
-
-    if (!parsed.questions || !Array.isArray(parsed.questions)) {
-      throw new Error('Invalid response format: missing questions array');
-    }
-
-    if (parsed.questions.length === 0) {
-      throw new Error('No questions were generated');
-    }
-
-    const questions: Question[] = parsed.questions.map((q: any, index: number) => {
-      if (!q.question || !q.options || !Array.isArray(q.options)) {
-        throw new Error(`Invalid question format at index ${index}`);
+      // Extract options
+      const optionMatches = block.match(/[A-D]\)\s*(.+?)(?=(?:[A-D]\)|ANSWER:|$))/gs);
+      if (!optionMatches || optionMatches.length < 4) {
+        console.warn(`Failed to parse options in block ${i + 1}, found ${optionMatches?.length || 0} options`);
+        continue;
       }
+      const options = optionMatches.slice(0, 4).map(opt =>
+        opt.replace(/^[A-D]\)\s*/, '').trim()
+      );
 
-      return {
-        id: `q-${Date.now()}-${index}`,
-        question: q.question,
-        options: q.options as [string, string, string, string],
-        correctAnswer: q.correctAnswer as 0 | 1 | 2 | 3,
-        explanation: q.explanation,
-      };
-    });
+      // Extract answer
+      const answerMatch = block.match(/ANSWER:\s*([A-D])/i);
+      if (!answerMatch) {
+        console.warn(`Failed to parse answer in block ${i + 1}`);
+        continue;
+      }
+      const answerLetter = answerMatch[1].toUpperCase();
+      const correctAnswer = ['A', 'B', 'C', 'D'].indexOf(answerLetter);
 
-    console.log(`Successfully generated ${questions.length} questions`);
+      // Extract explanation
+      const explanationMatch = block.match(/EXPLANATION:\s*(.+?)$/is);
+      const explanation = explanationMatch ? explanationMatch[1].trim() : '';
+
+      questions.push({
+        id: `q-${Date.now()}-${i}`,
+        question,
+        options: options as [string, string, string, string],
+        correctAnswer: correctAnswer as 0 | 1 | 2 | 3,
+        explanation,
+      });
+    }
+
+    if (questions.length === 0) {
+      throw new Error('Failed to parse any questions from response. Try again.');
+    }
+
+    console.log(`Successfully parsed ${questions.length} questions from plain text format`);
     return questions;
   } catch (error) {
     console.error('Quiz generation error:', error);
-    if (error instanceof SyntaxError) {
-      throw new Error('Failed to parse AI response. The AI returned invalid JSON. Please try again.');
-    }
     throw new Error(error instanceof Error ? error.message : 'Failed to generate quiz. Please try again.');
   }
 }
