@@ -135,9 +135,9 @@ export function TimetableView() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+    <div className="py-8 pb-24 lg:pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 px-4 sm:px-6 lg:px-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Class Timetable</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Organize your weekly class schedule</p>
@@ -151,12 +151,12 @@ export function TimetableView() {
       </div>
 
       {/* Weekly Grid View */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 border-t border-b border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full">
             {/* Header Row */}
             <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-              <div className="p-2 sm:p-4 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">Time</div>
+              <div className="p-2 sm:p-4"></div>
               {days.map((day) => (
                 <div key={day.id} className="p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700">
                   <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{day.short}</div>
@@ -190,7 +190,7 @@ export function TimetableView() {
                       {timeSlots.map((time) => (
                         <div
                           key={time}
-                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors h-[60px]"
+                          className="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors h-[60px]"
                         />
                       ))}
 
@@ -252,7 +252,7 @@ export function TimetableView() {
                       {timeSlots.map((time) => (
                         <div
                           key={time}
-                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors h-[80px]"
+                          className="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:bg-opacity-30 transition-colors h-[80px]"
                         />
                       ))}
 
@@ -308,7 +308,7 @@ export function TimetableView() {
       </div>
 
       {/* List View (Mobile-friendly alternative) */}
-      <div className="mt-8 lg:hidden">
+      <div className="mt-8 lg:hidden px-4 sm:px-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Schedule by Day</h2>
         <div className="space-y-4">
           {days.map((day) => {
