@@ -21,13 +21,18 @@ export async function extractTextFromImage(
 ): Promise<OCRResult> {
   try {
     console.log(`🖼️ Starting OCR for image: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+    console.log(`📦 File type: ${file.type}`);
 
     if (onStatus) onStatus('Initializing OCR engine...');
 
-    // Create Tesseract worker
+    // Create Tesseract worker with CDN paths
     const worker = await createWorker('eng', 1, {
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+      langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
       logger: (m) => {
         // Track progress
+        console.log('🔍 Tesseract message:', m);
         if (m.status === 'recognizing text') {
           const progress = Math.round((m.progress || 0) * 100);
           if (onProgress) onProgress(progress);
@@ -40,13 +45,18 @@ export async function extractTextFromImage(
       },
     });
 
+    console.log('✅ Worker created successfully');
+
     if (onStatus) onStatus('Processing image...');
 
     // Perform OCR
+    console.log('🔍 Starting recognition...');
     const { data } = await worker.recognize(file);
+    console.log('✅ Recognition completed');
 
     // Terminate worker to free memory
     await worker.terminate();
+    console.log('✅ Worker terminated');
 
     const extractedText = data.text.trim();
     const confidence = data.confidence;
@@ -72,6 +82,7 @@ export async function extractTextFromImage(
 
   } catch (error) {
     console.error('❌ OCR Error:', error);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return {
       success: false,
       text: '',
