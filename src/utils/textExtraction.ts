@@ -186,10 +186,15 @@ export async function extractTextFromImage(
       }
     );
 
+    // If OCR completed but found no/little text, still save the image with a helpful message
     if (!result.success) {
+      const noTextMessage = result.text && result.text.length > 0
+        ? `📸 Image uploaded: ${file.name}\n\nExtracted text (low confidence):\n${result.text}\n\n⚠️ ${result.error}`
+        : `📸 Image uploaded: ${file.name}\n\n⚠️ No text detected in this image.\n\nPossible reasons:\n- Image contains no text\n- Text is handwritten (OCR works best on printed text)\n- Image quality is too low\n- Text is too small or blurry\n\nYou can still use this image as a reference, but AI features may not work without text content.`;
+
       return {
-        success: false,
-        error: result.error || 'Failed to extract text from image',
+        success: true, // Treat as success so the note is saved
+        text: noTextMessage,
       };
     }
 
