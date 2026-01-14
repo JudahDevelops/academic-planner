@@ -153,7 +153,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [chatMessagesHook]);
 
   const getSubjectMessages = useCallback((subjectId: string) => {
-    return chatMessagesHook.data.filter(m => m.subjectId === subjectId);
+    return chatMessagesHook.data
+      .filter(m => m.subjectId === subjectId)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }, [chatMessagesHook.data]);
 
   const clearSubjectChat = useCallback(async (subjectId: string) => {
