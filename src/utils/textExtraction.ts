@@ -166,31 +166,48 @@ export async function extractTextFromPlainText(
 }
 
 /**
- * Extract text from image (placeholder - requires OCR or Vision API)
+ * Extract text from image using Tesseract.js OCR
  */
 export async function extractTextFromImage(
   file: File,
   onProgress?: ProgressCallback
 ): Promise<ExtractionResult> {
-  // For now, store the image data URL and use DeepSeek Vision API later
-  return new Promise((resolve) => {
-    onProgress?.(30, 'Loading image...');
-    const reader = new FileReader();
-    reader.onload = () => {
-      onProgress?.(95, 'Finalizing...');
-      resolve({
-        success: true,
-        text: `[Image: ${file.name}]\n(Image text extraction requires Vision API - will be processed during quiz generation)`,
-      });
-    };
-    reader.onerror = () => {
-      resolve({
+  try {
+    // Import OCR utility dynamically
+    const { extractTextFromImage: ocrExtract } = await import('./imageOCR');
+
+    const result = await ocrExtract(
+      file,
+      (progress) => {
+        onProgress?.(progress, `Recognizing text... ${progress}%`);
+      },
+      (status) => {
+        onProgress?.(0, status);
+      }
+    );
+
+    if (!result.success) {
+      return {
         success: false,
-        error: 'Failed to read image file',
-      });
+        error: result.error || 'Failed to extract text from image',
+      };
+    }
+
+    // Add confidence note if available
+    const confidenceNote = result.confidence
+      ? `\n\n[OCR Confidence: ${result.confidence.toFixed(1)}%]`
+      : '';
+
+    return {
+      success: true,
+      text: `📸 Extracted from image: ${file.name}\n\n${result.text}${confidenceNote}`,
     };
-    reader.readAsDataURL(file);
-  });
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to extract text from image',
+    };
+  }
 }
 
 /**

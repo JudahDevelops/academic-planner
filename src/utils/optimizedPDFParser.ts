@@ -225,28 +225,24 @@ export async function extractTextOptimized(
 
   // Check if it's a PDF
   if (fileType !== 'application/pdf' && !fileName.endsWith('.pdf')) {
-    // For non-PDFs, use simple text extraction
-    if (fileType.startsWith('text/') || fileName.endsWith('.txt') || fileName.endsWith('.md')) {
-      try {
-        onProgress?.(30, 'Reading text file...');
-        let text = await file.text();
-        if (text.length > MAX_TEXT_LENGTH) {
-          text = text.substring(0, MAX_TEXT_LENGTH);
-        }
-        onProgress?.(95, 'Complete!');
-        return { success: true, text: text.trim() };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to read text file',
-        };
-      }
-    }
+    // For non-PDFs (images, DOCX, text files), use the extractText utility
+    // which supports OCR for images, mammoth for DOCX, and text reading
+    try {
+      const { extractText } = await import('./textExtraction');
+      const result = await extractText(file, onProgress);
 
-    return {
-      success: false,
-      error: 'Unsupported file type. Please upload PDF or text files.',
-    };
+      return {
+        success: result.success,
+        text: result.text,
+        error: result.error,
+        isPreview: false,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to extract text from file',
+      };
+    }
   }
 
   // Use appropriate strategy for PDFs
