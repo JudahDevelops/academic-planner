@@ -166,51 +166,46 @@ export async function extractTextFromPlainText(
 }
 
 /**
- * Extract text from image using Tesseract.js OCR
+ * Extract text and analyze images using GPT-4 Vision
  */
 export async function extractTextFromImage(
   file: File,
   onProgress?: ProgressCallback
 ): Promise<ExtractionResult> {
   try {
-    // Import OCR utility dynamically
-    const { extractTextFromImage: ocrExtract } = await import('./imageOCR');
+    // Import GPT-4 Vision utility dynamically
+    const { analyzeImageWithGPT } = await import('./gptVision');
 
-    const result = await ocrExtract(
+    const result = await analyzeImageWithGPT(
       file,
       (progress) => {
-        onProgress?.(progress, `Recognizing text... ${progress}%`);
+        onProgress?.(progress, `Analyzing image... ${progress}%`);
       },
       (status) => {
         onProgress?.(0, status);
       }
     );
 
-    // If OCR completed but found no/little text, still save the image with a helpful message
+    // If analysis completed but found no/little content, still save the image with a helpful message
     if (!result.success) {
-      const noTextMessage = result.text && result.text.length > 0
-        ? `📸 Image uploaded: ${file.name}\n\nExtracted text (low confidence):\n${result.text}\n\n⚠️ ${result.error}`
-        : `📸 Image uploaded: ${file.name}\n\n⚠️ No text detected in this image.\n\nPossible reasons:\n- Image contains no text\n- Text is handwritten (OCR works best on printed text)\n- Image quality is too low\n- Text is too small or blurry\n\nYou can still use this image as a reference, but AI features may not work without text content.`;
+      const noContentMessage = result.text && result.text.length > 0
+        ? `📸 Image uploaded: ${file.name}\n\nExtracted content (low confidence):\n${result.text}\n\n⚠️ ${result.error}`
+        : `📸 Image uploaded: ${file.name}\n\n⚠️ No content detected in this image.\n\nPossible reasons:\n- Image is blank or corrupted\n- Image quality is too low\n- API error occurred\n\nYou can still use this image as a reference, but AI features may not work without content.`;
 
       return {
         success: true, // Treat as success so the note is saved
-        text: noTextMessage,
+        text: noContentMessage,
       };
     }
 
-    // Add confidence note if available
-    const confidenceNote = result.confidence
-      ? `\n\n[OCR Confidence: ${result.confidence.toFixed(1)}%]`
-      : '';
-
     return {
       success: true,
-      text: `📸 Extracted from image: ${file.name}\n\n${result.text}${confidenceNote}`,
+      text: `📸 Analyzed with GPT-4 Vision: ${file.name}\n\n${result.text}`,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to extract text from image',
+      error: error instanceof Error ? error.message : 'Failed to analyze image',
     };
   }
 }
